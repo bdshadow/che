@@ -114,6 +114,8 @@ import {StackSelectorTagsFilter} from './create-workspace/stack-selector/stack-s
 import {CreateWorkspaceController} from './create-workspace/create-workspace.controller';
 import {CreateWorkspaceSvc} from './create-workspace/create-workspace.service';
 
+import {WorkspaceConfigService} from './workspace-config.service';
+
 /**
  * @ngdoc controller
  * @name workspaces:WorkspacesConfig
@@ -246,6 +248,8 @@ export class WorkspacesConfig {
     register.controller('CreateWorkspaceController', CreateWorkspaceController);
     register.service('createWorkspaceSvc', CreateWorkspaceSvc);
 
+    register.service('workspaceConfigService', WorkspaceConfigService);
+
     // config routes
     register.app.config(($routeProvider: che.route.IRouteProvider) => {
       $routeProvider.accessWhen('/workspaces', {
@@ -264,7 +268,12 @@ export class WorkspacesConfig {
         title: 'New Workspace',
         templateUrl: 'app/workspaces/create-workspace/create-workspace.html',
         controller: 'CreateWorkspaceController',
-        controllerAs: 'createWorkspaceController'
+        controllerAs: 'createWorkspaceController',
+        resolve: {
+          initData: ['workspaceConfigService', (workspaceConfigService: WorkspaceConfigService) => {
+            return workspaceConfigService.resolveCreateWorkspaceRoute();
+          }]
+        }
       });
     });
   }
