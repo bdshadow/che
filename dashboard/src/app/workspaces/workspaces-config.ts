@@ -260,17 +260,11 @@ export class WorkspacesConfig {
         controller: 'WorkspaceDetailsController',
         controllerAs: 'workspaceDetailsController'
       })
-      .accessWhen('/create-workspace-new', {
+      .accessWhen('/create-workspace', {
         title: 'New Workspace',
         templateUrl: 'app/workspaces/create-workspace/create-workspace.html',
         controller: 'CreateWorkspaceController',
         controllerAs: 'createWorkspaceController'
-      })
-      .accessWhen('/create-workspace', {
-        title: 'New Workspace',
-        templateUrl: 'app/workspaces/workspace-details/workspace-details.html',
-        controller: 'WorkspaceDetailsController',
-        controllerAs: 'workspaceDetailsController'
       });
     });
   }
