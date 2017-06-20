@@ -35,6 +35,10 @@ export class CreateWorkspaceSvc {
    */
   private $q: ng.IQService;
   /**
+   * Root scope.
+   */
+  private $rootScope: che.IRootScopeService;
+  /**
    * Workspace API interaction.
    */
   private cheWorkspace: CheWorkspace;
@@ -65,8 +69,9 @@ export class CreateWorkspaceSvc {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($location: ng.ILocationService, $log: ng.ILogService, $q: ng.IQService, cheWorkspace: CheWorkspace, ideSvc: IdeSvc, namespaceSelectorSvc: NamespaceSelectorSvc, stackSelectorSvc: StackSelectorSvc, projectSourceSelectorService: ProjectSourceSelectorService) {
+  constructor($location: ng.ILocationService, $rootScope: che.IRootScopeService, $log: ng.ILogService, $q: ng.IQService, cheWorkspace: CheWorkspace, ideSvc: IdeSvc, namespaceSelectorSvc: NamespaceSelectorSvc, stackSelectorSvc: StackSelectorSvc, projectSourceSelectorService: ProjectSourceSelectorService) {
     this.$location = $location;
+    this.$rootScope = $rootScope;
     this.$log = $log;
     this.$q = $q;
     this.cheWorkspace = cheWorkspace;
@@ -168,6 +173,8 @@ export class CreateWorkspaceSvc {
         return this.createProjects(workspace.id, projectTemplates);
       }).then(() => {
         return this.importProjects(workspace.id, projectTemplates);
+      }).then(() => {
+        this.$rootScope.$emit('ide:refresh', workspace.id);
       });
     });
   }

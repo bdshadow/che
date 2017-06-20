@@ -73,6 +73,12 @@ class IdeSvc {
     this.openedWorkspace = null;
 
     this.listeningChannels = [];
+
+    $rootScope.$on('ide:refresh', (event: ng.IAngularEvent, workspaceId: string) => {
+      event.stopPropagation();
+      (this.$rootScope as any).showIDE = false;
+      this.openIde(workspaceId);
+    });
   }
 
   displayIDE(): void {
