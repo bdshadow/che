@@ -31,12 +31,13 @@
       <div flex="30" layout="column" layout-align="center start">
         <ng-form name="ramAmountForm">
           <che-number-spinner che-form="ramAmountForm"
-                              che-name="machineName"
+                              che-name="memory"
                               che-step="0.5"
                               che-tofixed="1"
-                              che-minvalue="1"
+                              che-minvalue="0.5"
                               che-maxvalue="100"
                               che-unit="GB"
+                              id="machine-{{ramSettingsMachineItemController.machineName}}-ram"
                               ng-model="ramSettingsMachineItemController.machineMemoryLimit"
                               ng-change="ramSettingsMachineItemController.onRamChanged(value)"
                               required>
