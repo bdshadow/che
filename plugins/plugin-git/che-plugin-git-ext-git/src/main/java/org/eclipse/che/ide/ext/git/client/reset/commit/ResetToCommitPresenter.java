@@ -82,32 +82,28 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
     public void showDialog(final Project project) {
         this.project = project;
 
-        service.log(appContext.getDevMachine(), project.getLocation(), null, false).then(new Operation<LogResponse>() {
-            @Override
-            public void apply(LogResponse log) throws OperationException {
-                view.setRevisions(log.getCommits());
-                view.setMixMode(true);
-                view.setEnableResetButton(selectedRevision != null);
-                view.showDialog();
+        service.log(appContext.getDevMachine(), project.getLocation(), null, -1, -1, false)
+               .then(log -> {
+                   view.setRevisions(log.getCommits());
+                   view.setMixMode(true);
+                   view.setEnableResetButton(selectedRevision != null);
+                   view.showDialog();
 
-                project.synchronize();
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                if (getErrorCode(error.getCause()) == ErrorCodes.INIT_COMMIT_WAS_NOT_PERFORMED) {
-                    dialogFactory.createMessageDialog(constant.resetCommitViewTitle(),
-                                                      constant.initCommitWasNotPerformed(),
-                                                      null).show();
-                    return;
-                }
-                String errorMessage = (error.getMessage() != null) ? error.getMessage() : constant.logFailed();
-                GitOutputConsole console = gitOutputConsoleFactory.create(LOG_COMMAND_NAME);
-                console.printError(errorMessage);
-                consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-                notificationManager.notify(constant.logFailed(), FAIL, FLOAT_MODE);
-            }
-        });
+                   project.synchronize();
+               })
+               .catchError(error -> {
+                   if (getErrorCode(error.getCause()) == ErrorCodes.INIT_COMMIT_WAS_NOT_PERFORMED) {
+                       dialogFactory.createMessageDialog(constant.resetCommitViewTitle(),
+                                                         constant.initCommitWasNotPerformed(),
+                                                         null).show();
+                       return;
+                   }
+                   String errorMessage = (error.getMessage() != null) ? error.getMessage() : constant.logFailed();
+                   GitOutputConsole console = gitOutputConsoleFactory.create(LOG_COMMAND_NAME);
+                   console.printError(errorMessage);
+                   consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
+                   notificationManager.notify(constant.logFailed(), FAIL, FLOAT_MODE);
+               });
     }
 
     /**

@@ -85,7 +85,6 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         view.showDialog();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void onAddClicked() {
         DevMachine devMachine = appContext.getDevMachine();
@@ -98,26 +97,19 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         }
         final GitOutputConsole console = gitOutputConsoleFactory.create(constant.addToIndexCommandName());
         consolesPanelPresenter.addCommandOutput(devMachine.getId(), console);
-        service.add(devMachine, projectLocation, view.isUpdated(), paths)
-               .then(new Operation<Void>() {
-                   @Override
-                   public void apply(Void arg) throws OperationException {
-                       console.print(constant.addSuccess());
-                       notificationManager.notify(constant.addSuccess());
-                       view.close();
-                   }
+        service.add(view.isUpdated(), paths)
+               .then(arg -> {
+                   console.print(constant.addSuccess());
+                   notificationManager.notify(constant.addSuccess());
+                   view.close();
                })
-               .catchError(new Operation<PromiseError>() {
-                   @Override
-                   public void apply(PromiseError arg) throws OperationException {
-                       console.printError(constant.addFailed());
-                       notificationManager.notify(constant.addFailed(), FAIL, FLOAT_MODE);
-                       view.close();
-                   }
+               .catchError(arg -> {
+                   console.printError(constant.addFailed());
+                   notificationManager.notify(constant.addFailed(), FAIL, FLOAT_MODE);
+                   view.close();
                });
     }
 
-    /** {@inheritDoc} */
     @Override
     public void onCancelClicked() {
         view.close();

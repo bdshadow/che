@@ -15,12 +15,9 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitResources;
 import org.eclipse.che.ide.ext.git.client.fetch.FetchPresenter;
-
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * @author Andrey Plotnikov
@@ -42,10 +39,6 @@ public class FetchAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        final Project project = appContext.getRootProject();
-
-        checkState(project != null, "Null project occurred");
-
-        presenter.showDialog(project);
+        presenter.showDialog();
     }
 }

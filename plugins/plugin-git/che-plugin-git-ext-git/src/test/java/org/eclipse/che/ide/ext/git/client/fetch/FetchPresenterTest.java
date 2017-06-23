@@ -64,11 +64,11 @@ public class FetchPresenterTest extends BaseTest {
                                        gitOutputConsoleFactory,
                                        processesPanelPresenter);
 
-        when(service.remoteList(anyObject(), any(Path.class), anyString(), anyBoolean())).thenReturn(remoteListPromise);
+        when(service.remoteList(anyString(), anyBoolean())).thenReturn(remoteListPromise);
         when(remoteListPromise.then(any(Operation.class))).thenReturn(remoteListPromise);
         when(remoteListPromise.catchError(any(Operation.class))).thenReturn(remoteListPromise);
 
-        when(service.branchList(anyObject(), any(Path.class), anyObject())).thenReturn(branchListPromise);
+        when(service.branchList(anyObject())).thenReturn(branchListPromise);
         when(branchListPromise.then(any(Operation.class))).thenReturn(branchListPromise);
         when(branchListPromise.catchError(any(Operation.class))).thenReturn(branchListPromise);
 
@@ -86,7 +86,7 @@ public class FetchPresenterTest extends BaseTest {
         final List<Branch> branches = new ArrayList<>();
         branches.add(branch);
 
-        presenter.showDialog(project);
+        presenter.showDialog();
 
         verify(remoteListPromise).then(remoteListCaptor.capture());
         remoteListCaptor.getValue().apply(remotes);
@@ -136,7 +136,7 @@ public class FetchPresenterTest extends BaseTest {
         branches.add(branch);
         when(branch.isActive()).thenReturn(ACTIVE_BRANCH);
 
-        presenter.showDialog(project);
+        presenter.showDialog();
         presenter.onRemoteRepositoryChanged();
 
         verify(branchListPromise).then(branchListCaptor.capture());

@@ -30,11 +30,11 @@ import org.eclipse.che.ide.resources.tree.ResourceNode.NodeFactory;
 public interface JavaNodeFactory extends NodeFactory {
     PackageNode newPackage(Container resource, NodeSettings nodeSettings);
 
-    LibrariesNode newLibrariesNode(Path project, NodeSettings nodeSettings);
+    LibrariesNode newLibrariesNode(NodeSettings nodeSettings);
 
-    JarNode newJarNode(Jar jar, Path project, NodeSettings nodeSettings);
+    JarNode newJarNode(Jar jar, NodeSettings nodeSettings);
 
-    JarFolderNode newJarFolderNode(JarEntry jarEntry, int libId, Path project, NodeSettings nodeSettings);
+    JarFolderNode newJarFolderNode(JarEntry jarEntry, int libId, NodeSettings nodeSettings);
 
-    JarFileNode newJarFileNode(JarEntry jarEntry, int libId, Path project, NodeSettings nodeSettings);
+    JarFileNode newJarFileNode(JarEntry jarEntry, int libId, NodeSettings nodeSettings);
 }

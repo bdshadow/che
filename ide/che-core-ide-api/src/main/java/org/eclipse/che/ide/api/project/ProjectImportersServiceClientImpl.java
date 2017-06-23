@@ -32,7 +32,7 @@ public class ProjectImportersServiceClientImpl implements ProjectImportersServic
     }
 
     @Override
-    public void getProjectImporters(DevMachine devMachine, AsyncRequestCallback<ProjectImporterData> callback) {
+    public void getProjectImporters(AsyncRequestCallback<ProjectImporterData> callback) {
         asyncRequestFactory.createGetRequest(devMachine.getWsAgentBaseUrl() + "/project-importers")
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .send(callback);

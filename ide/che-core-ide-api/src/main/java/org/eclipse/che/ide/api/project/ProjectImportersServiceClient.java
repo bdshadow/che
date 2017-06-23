@@ -20,5 +20,5 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
  */
 public interface ProjectImportersServiceClient {
 
-    void getProjectImporters(DevMachine devMachine, AsyncRequestCallback<ProjectImporterData> callback);
+    void getProjectImporters(AsyncRequestCallback<ProjectImporterData> callback);
 }

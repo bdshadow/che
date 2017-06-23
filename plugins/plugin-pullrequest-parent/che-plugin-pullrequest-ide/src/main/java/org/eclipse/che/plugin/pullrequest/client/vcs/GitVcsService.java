@@ -20,7 +20,6 @@ import org.eclipse.che.api.git.shared.BranchListMode;
 import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.Remote;
-import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
@@ -34,16 +33,12 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.resource.Path;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.websocket.WebSocketException;
-import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Git backed implementation for {@link VcsService}.
@@ -54,7 +49,6 @@ public class GitVcsService implements VcsService {
 
     private final GitServiceClient       service;
     private final DtoFactory             dtoFactory;
-    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AppContext             appContext;
 
     @Inject
@@ -63,7 +57,6 @@ public class GitVcsService implements VcsService {
                          final GitServiceClient service,
                          final AppContext appContext) {
         this.dtoFactory = dtoFactory;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.service = service;
         this.appContext = appContext;
     }
@@ -71,94 +64,62 @@ public class GitVcsService implements VcsService {
     @Override
     public void addRemote(@NotNull final ProjectConfig project, @NotNull final String remote, @NotNull final String remoteUrl,
                           @NotNull final AsyncCallback<Void> callback) {
-
-        service.remoteAdd(appContext.getDevMachine(), project, remote, remoteUrl, new AsyncRequestCallback<String>() {
-            @Override
-            protected void onSuccess(final String notUsed) {
-                callback.onSuccess(null);
-            }
-
-            @Override
-            protected void onFailure(final Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+        service.remoteAdd(appContext.getRootProject().getLocation(), remote, remoteUrl)
+               .then(arg -> {
+                   callback.onSuccess(null);
+               })
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     @Override
     public void checkoutBranch(@NotNull final ProjectConfig project, @NotNull final String name,
                                final boolean createNew, @NotNull final AsyncCallback<String> callback) {
 
-        service.checkout(appContext.getDevMachine(),
-                         project,
+        service.checkout(appContext.getRootProject().getLocation(),
                          dtoFactory.createDto(CheckoutRequest.class)
                                    .withName(name)
-                                   .withCreateNew(createNew),
-                         new AsyncRequestCallback<String>() {
-                             @Override
-                             protected void onSuccess(final String branchName) {
-                                 callback.onSuccess(branchName);
-                             }
-
-                             @Override
-                             protected void onFailure(final Throwable exception) {
-                                 callback.onFailure(exception);
-                             }
-                         });
+                                   .withCreateNew(createNew))
+               .then(callback::onSuccess)
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     @Override
     public void commit(@NotNull final ProjectConfig project, final boolean includeUntracked, @NotNull final String commitMessage,
                        @NotNull final AsyncCallback<Void> callback) {
-        try {
-
-            service.add(appContext.getDevMachine(), project, !includeUntracked, null, new RequestCallback<Void>() {
-                @Override
-                protected void onSuccess(Void aVoid) {
-
-                    service.commit(appContext.getDevMachine(), project, commitMessage, true, false, new AsyncRequestCallback<Revision>() {
-                        @Override
-                        protected void onSuccess(final Revision revision) {
-                            callback.onSuccess(null);
-                        }
-
-                        @Override
-                        protected void onFailure(final Throwable exception) {
-                            callback.onFailure(exception);
-                        }
-                    });
-                }
-
-                @Override
-                protected void onFailure(final Throwable exception) {
-                    callback.onFailure(exception);
-                }
-            });
-
-        } catch (final WebSocketException exception) {
-            callback.onFailure(exception);
-        }
+        service.add(appContext.getRootProject().getLocation(), !includeUntracked, null)
+               .then(arg -> {
+                   service.commit(appContext.getRootProject().getLocation(), commitMessage, true, false)
+                          .then(revision -> {
+                              callback.onSuccess(null);
+                          })
+                          .catchError(error -> {
+                              callback.onFailure(error.getCause());
+                          });
+               })
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     @Override
     public void deleteRemote(@NotNull final ProjectConfig project, @NotNull final String remote,
                              @NotNull final AsyncCallback<Void> callback) {
-        service.remoteDelete(appContext.getDevMachine(), project, remote, new AsyncRequestCallback<String>() {
-            @Override
-            protected void onSuccess(final String notUsed) {
-                callback.onSuccess(null);
-            }
-
-            @Override
-            protected void onFailure(final Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+        service.remoteDelete(appContext.getRootProject().getLocation(), remote)
+               .then(arg -> {
+                   callback.onSuccess(null);
+               })
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     @Override
     public Promise<String> getBranchName(ProjectConfig project) {
-        return service.getStatus(appContext.getDevMachine(), Path.valueOf(project.getPath()))
+        return service.getStatus(Path.valueOf(project.getPath()))
                       .then(new Function<Status, String>() {
                           @Override
                           public String apply(Status status) throws FunctionException {
@@ -169,7 +130,7 @@ public class GitVcsService implements VcsService {
 
     @Override
     public void hasUncommittedChanges(@NotNull final ProjectConfig project, @NotNull final AsyncCallback<Boolean> callback) {
-        service.getStatus(appContext.getDevMachine(), Path.valueOf(project.getPath()))
+        service.getStatus(Path.valueOf(project.getPath()))
                .then(new Operation<Status>() {
                    @Override
                    public void apply(Status status) throws OperationException {
@@ -214,20 +175,17 @@ public class GitVcsService implements VcsService {
 
     @Override
     public Promise<List<Remote>> listRemotes(ProjectConfig project) {
-        return service.remoteList(appContext.getDevMachine(), project, null, false);
+        return service.remoteList(appContext.getRootProject().getLocation(), null, false);
     }
 
     @Override
     public Promise<PushResponse> pushBranch(final ProjectConfig project, final String remote, final String localBranchName) {
-        return service.push(appContext.getDevMachine(), project, Collections.singletonList(localBranchName), remote, true)
-                      .catchErrorPromise(new Function<PromiseError, Promise<PushResponse>>() {
-                          @Override
-                          public Promise<PushResponse> apply(PromiseError error) throws FunctionException {
-                              if (BRANCH_UP_TO_DATE_ERROR_MESSAGE.equalsIgnoreCase(error.getMessage())) {
-                                  return Promises.reject(JsPromiseError.create(new BranchUpToDateException(localBranchName)));
-                              } else {
-                                  return Promises.reject(error);
-                              }
+        return service.push(appContext.getRootProject().getLocation(), Collections.singletonList(localBranchName), remote, true)
+                      .catchErrorPromise(error -> {
+                          if (BRANCH_UP_TO_DATE_ERROR_MESSAGE.equalsIgnoreCase(error.getMessage())) {
+                              return Promises.reject(JsPromiseError.create(new BranchUpToDateException(localBranchName)));
+                          } else {
+                              return Promises.reject(error);
                           }
                       });
     }
@@ -243,24 +201,14 @@ public class GitVcsService implements VcsService {
      *         callback when the operation is done.
      */
     private void listBranches(final ProjectConfig project, final BranchListMode listMode, final AsyncCallback<List<Branch>> callback) {
-        final Unmarshallable<List<Branch>> unMarshaller =
-                dtoUnmarshallerFactory.newListUnmarshaller(Branch.class);
-        service.branchList(appContext.getDevMachine(), project, listMode,
-                           new AsyncRequestCallback<List<Branch>>(unMarshaller) {
-                               @Override
-                               protected void onSuccess(final List<Branch> branches) {
-                                   final List<Branch> result = new ArrayList<>();
-                                   for (final Branch branch : branches) {
-                                       result.add(fromGitBranch(branch));
-                                   }
-                                   callback.onSuccess(result);
-                               }
-
-                               @Override
-                               protected void onFailure(final Throwable exception) {
-                                   callback.onFailure(exception);
-                               }
-                           });
+        service.branchList(appContext.getDevMachine(), appContext.getRootProject().getLocation(), listMode)
+               .then(branches -> {
+                   final List<Branch> result = branches.stream().map(this::fromGitBranch).collect(Collectors.toList());
+                   callback.onSuccess(result);
+               })
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     /**

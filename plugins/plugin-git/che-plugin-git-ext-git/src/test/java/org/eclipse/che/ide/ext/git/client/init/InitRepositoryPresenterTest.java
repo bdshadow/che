@@ -13,7 +13,6 @@ package org.eclipse.che.ide.ext.git.client.init;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
-import org.eclipse.che.ide.resource.Path;
 import org.junit.Test;
 
 import static org.eclipse.che.ide.ext.git.client.init.InitRepositoryPresenter.INIT_COMMAND_NAME;
@@ -47,7 +46,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
                                                 service,
                                                 appContext);
 
-        when(service.init(anyObject(), any(Path.class), anyBoolean())).thenReturn(voidPromise);
+        when(service.init(anyBoolean())).thenReturn(voidPromise);
         when(voidPromise.then(any(Operation.class))).thenReturn(voidPromise);
         when(voidPromise.catchError(any(Operation.class))).thenReturn(voidPromise);
     }

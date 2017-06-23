@@ -39,5 +39,5 @@ public interface ProjectTypeServiceClient {
      *         id of the project type to get
      * @return a promise that resolves to the {@link ProjectTypeDto}, or rejects with an error
      */
-    Promise<ProjectTypeDto> getProjectType(DevMachine devMachine, String id);
+    Promise<ProjectTypeDto> getProjectType(String id);
 }

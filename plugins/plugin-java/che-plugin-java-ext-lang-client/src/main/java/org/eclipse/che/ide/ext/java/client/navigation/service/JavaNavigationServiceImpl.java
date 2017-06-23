@@ -65,7 +65,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<OpenDeclarationDescriptor> findDeclaration(Path project, String fqn, int offset) {
+    public Promise<OpenDeclarationDescriptor> findDeclaration(String fqn, int offset) {
         String url =
                 appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/find-declaration?projectpath=" + project.toString() + "&fqn=" + fqn +
                 "&offset=" + offset;
@@ -93,7 +93,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<List<JarEntry>> getLibraryChildren(Path project, int libId) {
+    public Promise<List<JarEntry>> getLibraryChildren(int libId) {
         String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/lib/children?projectpath=" + project.toString() +
                      "&root=" + libId;
 
@@ -108,7 +108,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<List<JarEntry>> getChildren(Path project, int libId, Path path) {
+    public Promise<List<JarEntry>> getChildren(int libId, Path path) {
         String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/children?projectpath=" + project.toString() + "&root=" + libId +
                      "&path=" + path.toString();
         return requestFactory.createGetRequest(url).send(unmarshallerFactory.newListUnmarshaller(JarEntry.class));
@@ -122,7 +122,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<JarEntry> getEntry(Path project, int libId, String path) {
+    public Promise<JarEntry> getEntry(int libId, String path) {
         String url =
                 appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/entry?projectpath=" + project.toString() + "&root=" + libId +
                 "&path=" + path;
@@ -137,7 +137,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<ClassContent> getContent(Path project, int libId, Path path) {
+    public Promise<ClassContent> getContent(int libId, Path path) {
         String url = getContentUrl(project.toString(), libId, path.toString());
 
         return requestFactory.createGetRequest(url).send(unmarshallerFactory.newUnmarshaller(ClassContent.class));
@@ -150,13 +150,13 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<ClassContent> getContent(Path project, String fqn) {
+    public Promise<ClassContent> getContent(String fqn) {
         String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/contentbyfqn?projectpath=" + project.toString() + "&fqn=" + fqn;
         return requestFactory.createGetRequest(url).send(unmarshallerFactory.newUnmarshaller(ClassContent.class));
     }
 
     @Override
-    public Promise<ImplementationsDescriptorDTO> getImplementations(Path project, String fqn, int offset) {
+    public Promise<ImplementationsDescriptorDTO> getImplementations(String fqn, int offset) {
         final String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/implementations" +
                            "?projectpath=" + project.toString() + "&fqn=" + fqn + "&offset=" + offset;
 
@@ -167,7 +167,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<CompilationUnit> getCompilationUnit(Path project, String fqn, boolean showInherited) {
+    public Promise<CompilationUnit> getCompilationUnit(String fqn, boolean showInherited) {
         final String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/compilation-unit" +
                            "?projectpath=" + project.toString() + "&fqn=" + fqn + "&showinherited=" + showInherited;
 
@@ -205,7 +205,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<List<MethodParameters>> getMethodParametersHints(Path project, String fqn, int offset, int lineStartOffset) {
+    public Promise<List<MethodParameters>> getMethodParametersHints(String fqn, int offset, int lineStartOffset) {
         String url = appContext.getDevMachine().getWsAgentBaseUrl() + "/java/navigation/parameters" +
                      "?projectpath=" + project.toString() + "&fqn=" + fqn + "&offset=" + offset + "&lineStart=" + lineStartOffset;
 

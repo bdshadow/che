@@ -13,11 +13,9 @@ package org.eclipse.che.ide.ext.git.client.status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.ide.api.notification.StatusNotification;
-import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsoleFactory;
 import org.eclipse.che.ide.processes.panel.ProcessesPanelPresenter;
-import org.eclipse.che.ide.resource.Path;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -40,9 +38,6 @@ public class StatusCommandPresenterTest extends BaseTest {
     private StatusCommandPresenter presenter;
 
     @Mock
-    private WorkspaceAgent workspaceAgent;
-
-    @Mock
     private GitOutputConsoleFactory gitOutputConsoleFactory;
 
     @Mock
@@ -59,7 +54,7 @@ public class StatusCommandPresenterTest extends BaseTest {
                                                constant,
                                                notificationManager);
 
-        when(service.statusText(anyObject(), any(Path.class), any(StatusFormat.class))).thenReturn(stringPromise);
+        when(service.statusText(any(StatusFormat.class))).thenReturn(stringPromise);
         when(stringPromise.then(any(Operation.class))).thenReturn(stringPromise);
         when(stringPromise.catchError(any(Operation.class))).thenReturn(stringPromise);
     }
@@ -68,7 +63,7 @@ public class StatusCommandPresenterTest extends BaseTest {
     public void testShowStatusWhenStatusTextRequestIsSuccessful() throws Exception {
         when(gitOutputConsoleFactory.create(anyString())).thenReturn(console);
 
-        presenter.showStatus(project);
+        presenter.showStatus();
 
         verify(stringPromise).then(stringCaptor.capture());
         stringCaptor.getValue().apply("");
@@ -79,7 +74,7 @@ public class StatusCommandPresenterTest extends BaseTest {
 
     @Test
     public void testShowStatusWhenStatusTextRequestIsFailed() throws Exception {
-        presenter.showStatus(project);
+        presenter.showStatus();
 
         verify(stringPromise).catchError(promiseErrorCaptor.capture());
         promiseErrorCaptor.getValue().apply(promiseError);

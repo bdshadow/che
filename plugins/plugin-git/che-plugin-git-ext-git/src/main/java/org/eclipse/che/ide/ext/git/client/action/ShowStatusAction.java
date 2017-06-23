@@ -41,10 +41,6 @@ public class ShowStatusAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        final Project project = appContext.getRootProject();
-
-        checkState(project != null, "Null project occurred");
-
-        presenter.showStatus(project);
+        presenter.showStatus();
     }
 }
