@@ -98,7 +98,7 @@ public class CheckoutReferenceTest extends BaseTest {
         presenter.onEnterClicked();
 
         verify(view, never()).close();
-        verify(service, never()).checkout(anyObject(), any(Path.class), any(CheckoutRequest.class));
+        verify(service, never()).checkout(any(Path.class), any(CheckoutRequest.class));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class CheckoutReferenceTest extends BaseTest {
         when(checkoutRequest.withName(anyString())).thenReturn(checkoutRequest);
         when(checkoutRequest.withCreateNew(anyBoolean())).thenReturn(checkoutRequest);
         reset(service);
-        when(service.checkout(anyObject(), any(Path.class), any(CheckoutRequest.class))).thenReturn(stringPromise);
+        when(service.checkout(any(Path.class), any(CheckoutRequest.class))).thenReturn(stringPromise);
         when(stringPromise.then(any(Operation.class))).thenReturn(stringPromise);
         when(stringPromise.catchError(any(Operation.class))).thenReturn(stringPromise);
         when(view.getReference()).thenReturn(CORRECT_REFERENCE);
@@ -123,7 +123,7 @@ public class CheckoutReferenceTest extends BaseTest {
         synchronizeCaptor.getValue().apply(new Resource[0]);
 
         verify(view).close();
-        verify(service).checkout(anyObject(), any(Path.class), any(CheckoutRequest.class));
+        verify(service).checkout(any(Path.class), any(CheckoutRequest.class));
         verify(checkoutRequest).withName(CORRECT_REFERENCE);
         verifyNoMoreInteractions(checkoutRequest);
     }

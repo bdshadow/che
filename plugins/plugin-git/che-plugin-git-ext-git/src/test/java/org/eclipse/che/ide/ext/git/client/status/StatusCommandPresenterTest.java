@@ -16,6 +16,7 @@ import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsoleFactory;
 import org.eclipse.che.ide.processes.panel.ProcessesPanelPresenter;
+import org.eclipse.che.ide.resource.Path;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -54,7 +55,7 @@ public class StatusCommandPresenterTest extends BaseTest {
                                                constant,
                                                notificationManager);
 
-        when(service.statusText(any(StatusFormat.class))).thenReturn(stringPromise);
+        when(service.statusText(any(Path.class), any(StatusFormat.class))).thenReturn(stringPromise);
         when(stringPromise.then(any(Operation.class))).thenReturn(stringPromise);
         when(stringPromise.catchError(any(Operation.class))).thenReturn(stringPromise);
     }
@@ -63,7 +64,7 @@ public class StatusCommandPresenterTest extends BaseTest {
     public void testShowStatusWhenStatusTextRequestIsSuccessful() throws Exception {
         when(gitOutputConsoleFactory.create(anyString())).thenReturn(console);
 
-        presenter.showStatus();
+        presenter.showStatus(project);
 
         verify(stringPromise).then(stringCaptor.capture());
         stringCaptor.getValue().apply("");
@@ -74,7 +75,7 @@ public class StatusCommandPresenterTest extends BaseTest {
 
     @Test
     public void testShowStatusWhenStatusTextRequestIsFailed() throws Exception {
-        presenter.showStatus();
+        presenter.showStatus(project);
 
         verify(stringPromise).catchError(promiseErrorCaptor.capture());
         promiseErrorCaptor.getValue().apply(promiseError);

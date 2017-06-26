@@ -16,6 +16,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsole;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsoleFactory;
@@ -57,10 +58,10 @@ public class DeleteRepositoryPresenter {
     }
 
     /** Delete Git repository. */
-    public void deleteRepository() {
+    public void deleteRepository(Project project) {
         final GitOutputConsole console = gitOutputConsoleFactory.create(DELETE_REPO_COMMAND_NAME);
 
-        service.deleteRepository().then(ignored -> {
+        service.deleteRepository(project.getLocation()).then(ignored -> {
             console.print(constant.deleteGitRepositorySuccess());
             consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
             notificationManager.notify(constant.deleteGitRepositorySuccess());

@@ -48,9 +48,9 @@ import static org.eclipse.che.ide.ext.git.client.merge.Reference.RefType.REMOTE_
 @Singleton
 public class MergePresenter implements MergeView.ActionDelegate {
 
-    private static final String MERGE_COMMAND_NAME    = "Git merge";
-    private static final String LOCAL_BRANCHES_TITLE  = "Local Branches";
-    private static final String REMOTE_BRANCHES_TITLE = "Remote Branches";
+    public static final String MERGE_COMMAND_NAME    = "Git merge";
+    public static final String LOCAL_BRANCHES_TITLE  = "Local Branches";
+    public static final String REMOTE_BRANCHES_TITLE = "Remote Branches";
 
     private final MergeView               view;
     private final DialogFactory           dialogFactory;
@@ -92,7 +92,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
         selectedReference = null;
         view.setEnableMergeButton(false);
 
-        service.branchList(LIST_LOCAL)
+        service.branchList(project.getLocation(), LIST_LOCAL)
                .then(branches -> {
                    List<Reference> references = new ArrayList<>();
                    for (Branch branch : branches) {
@@ -109,7 +109,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
                    notificationManager.notify(constant.branchesListFailed(), FAIL, FLOAT_MODE);
                });
 
-        service.branchList(LIST_REMOTE)
+        service.branchList(project.getLocation(), LIST_REMOTE)
                .then(branches -> {
                    List<Reference> references = new ArrayList<>();
                    for (Branch branch : branches) {
@@ -141,7 +141,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
 
         final GitOutputConsole console = gitOutputConsoleFactory.create(MERGE_COMMAND_NAME);
 
-        service.merge(selectedReference.getDisplayName())
+        service.merge(project.getLocation(), selectedReference.getDisplayName())
                .then(result -> {
                    console.print(formMergeMessage(result));
                    consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);

@@ -69,18 +69,14 @@ public class AddRemoteRepositoryPresenter implements AddRemoteRepositoryView.Act
         final String url = view.getUrl().trim();
         final Project project = appContext.getRootProject();
 
-        service.remoteAdd(appContext.getDevMachine(), project.getLocation(), name, url).then(new Operation<Void>() {
-            @Override
-            public void apply(Void arg) throws OperationException {
-                callback.onSuccess(null);
-                view.close();
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                callback.onFailure(error.getCause());
-            }
-        });
+        service.remoteAdd(project.getLocation(), name, url)
+               .then(arg -> {
+                   callback.onSuccess(null);
+                   view.close();
+               })
+               .catchError(error -> {
+                   callback.onFailure(error.getCause());
+               });
     }
 
     /** {@inheritDoc} */

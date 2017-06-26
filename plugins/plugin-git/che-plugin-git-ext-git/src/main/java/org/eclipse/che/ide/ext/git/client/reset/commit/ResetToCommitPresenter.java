@@ -82,7 +82,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
     public void showDialog(final Project project) {
         this.project = project;
 
-        service.log(appContext.getDevMachine(), project.getLocation(), null, -1, -1, false)
+        service.log(project.getLocation(), null, -1, -1, false)
                .then(log -> {
                    view.setRevisions(log.getCommits());
                    view.setMixMode(true);
@@ -142,24 +142,20 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
 
         final GitOutputConsole console = gitOutputConsoleFactory.create(RESET_COMMAND_NAME);
 
-        service.reset(appContext.getDevMachine(), project.getLocation(), selectedRevision.getId(), type, null).then(new Operation<Void>() {
-            @Override
-            public void apply(Void ignored) throws OperationException {
-                console.print(constant.resetSuccessfully());
-                consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-                notificationManager.notify(constant.resetSuccessfully());
+        service.reset(project.getLocation(), selectedRevision.getId(), type, null)
+               .then(ignored -> {
+                   console.print(constant.resetSuccessfully());
+                   consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
+                   notificationManager.notify(constant.resetSuccessfully());
 
-                project.synchronize();
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                String errorMessage = (error.getMessage() != null) ? error.getMessage() : constant.resetFail();
-                console.printError(errorMessage);
-                consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-                notificationManager.notify(constant.resetFail(), FAIL, FLOAT_MODE);
-            }
-        });
+                   project.synchronize();
+               })
+               .catchError(error -> {
+                   String errorMessage = (error.getMessage() != null) ? error.getMessage() : constant.resetFail();
+                   console.printError(errorMessage);
+                   consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
+                   notificationManager.notify(constant.resetFail(), FAIL, FLOAT_MODE);
+               });
     }
 }
 

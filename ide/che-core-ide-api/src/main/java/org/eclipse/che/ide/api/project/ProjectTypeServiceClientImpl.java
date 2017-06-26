@@ -66,7 +66,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
     }
 
     @Override
-    public Promise<ProjectTypeDto> getProjectType(@NotNull @NotNull String id) {
+    public Promise<ProjectTypeDto> getProjectType(@NotNull DevMachine devMachine, @NotNull String id) {
         final String url = devMachine.getWsAgentBaseUrl() + "/project-type/" + id;
         return asyncRequestFactory.createGetRequest(url)
                                   .header(ACCEPT, APPLICATION_JSON)

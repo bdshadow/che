@@ -13,9 +13,6 @@ package org.eclipse.che.ide.ext.git.client.add;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.machine.DevMachine;
@@ -97,7 +94,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         }
         final GitOutputConsole console = gitOutputConsoleFactory.create(constant.addToIndexCommandName());
         consolesPanelPresenter.addCommandOutput(devMachine.getId(), console);
-        service.add(view.isUpdated(), paths)
+        service.add(projectLocation, view.isUpdated(), paths)
                .then(arg -> {
                    console.print(constant.addSuccess());
                    notificationManager.notify(constant.addSuccess());

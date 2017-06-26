@@ -10,14 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client.compare.branchlist;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.git.shared.Branch;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.dialogs.DialogFactory;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.resources.File;
 import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.api.resources.Resource;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
@@ -30,6 +35,7 @@ import org.eclipse.che.ide.processes.panel.ProcessesPanelPresenter;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -107,12 +113,14 @@ public class BranchListPresenter implements BranchListView.ActionDelegate {
     @Override
     public void onCompareClicked() {
 
-        final String selectedItemPath = selectedItem.getLocation()
-                                                    .removeFirstSegments(project.getLocation().segmentCount())
-                                                    .removeTrailingSeparator()
-                                                    .toString();
+        final String selectedItemPath = appContext.getResource()
+                                                  .getLocation()
+                                                  .removeFirstSegments(project.getLocation().segmentCount())
+                                                  .removeTrailingSeparator()
+                                                  .toString();
 
-        service.diff(selectedItemPath.isEmpty() ? null : singletonList(selectedItemPath),
+        service.diff(project.getLocation(),
+                     selectedItemPath.isEmpty() ? null : singletonList(selectedItemPath),
                      NAME_STATUS,
                      false,
                      0,
@@ -163,15 +171,17 @@ public class BranchListPresenter implements BranchListView.ActionDelegate {
 
     /** Get list of branches from selected project. */
     private void getBranches() {
-        service.branchList(LIST_ALL).then(branches -> {
-            view.setBranches(branches);
-            view.showDialog();
-        }).catchError(error -> {
-            final String errorMessage = (error.getMessage() != null) ? error.getMessage() : locale.branchesListFailed();
-            GitOutputConsole console = gitOutputConsoleFactory.create(BRANCH_LIST_COMMAND_NAME);
-            console.printError(errorMessage);
-            consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-            notificationManager.notify(locale.branchesListFailed(), FAIL, NOT_EMERGE_MODE);
-        });
+        service.branchList(project.getLocation(), LIST_ALL)
+               .then(branches -> {
+                   view.setBranches(branches);
+                   view.showDialog();
+               })
+               .catchError(error -> {
+                   final String errorMessage = (error.getMessage() != null) ? error.getMessage() : locale.branchesListFailed();
+                   GitOutputConsole console = gitOutputConsoleFactory.create(BRANCH_LIST_COMMAND_NAME);
+                   console.printError(errorMessage);
+                   consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
+                   notificationManager.notify(locale.branchesListFailed(), FAIL, NOT_EMERGE_MODE);
+               });
     }
 }

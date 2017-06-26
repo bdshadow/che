@@ -51,6 +51,6 @@ public class DeleteRepositoryAction extends GitAction {
 
         dialogFactory.createConfirmDialog(constant.deleteGitRepositoryTitle(),
                                           constant.deleteGitRepositoryQuestion(project.getName()),
-                                          presenter::deleteRepository, null).show();
+                                          () -> presenter.deleteRepository(project), null).show();
     }
 }

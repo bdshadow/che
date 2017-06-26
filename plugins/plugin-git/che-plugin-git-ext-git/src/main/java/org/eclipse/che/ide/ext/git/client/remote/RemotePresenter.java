@@ -89,22 +89,18 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
      * then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        service.remoteList(appContext.getDevMachine(), project.getLocation(), null, true).then(new Operation<List<Remote>>() {
-            @Override
-            public void apply(List<Remote> remotes) throws OperationException {
-                view.setEnableDeleteButton(selectedRemote != null);
-                view.setRemotes(remotes);
-                if (!view.isShown()) {
-                    view.showDialog();
-                }
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                String errorMessage = error.getMessage() != null ? error.getMessage() : constant.remoteListFailed();
-                handleError(errorMessage);
-            }
-        });
+        service.remoteList(project.getLocation(), null, true)
+               .then(remotes -> {
+                   view.setEnableDeleteButton(selectedRemote != null);
+                   view.setRemotes(remotes);
+                   if (!view.isShown()) {
+                       view.showDialog();
+                   }
+               })
+               .catchError(error -> {
+                   String errorMessage = error.getMessage() != null ? error.getMessage() : constant.remoteListFailed();
+                   handleError(errorMessage);
+               });
     }
 
     /**
@@ -149,23 +145,19 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
             return;
         }
 
-        service.remoteDelete(appContext.getDevMachine(), project.getLocation(), selectedRemote.getName()).then(new Operation<Void>() {
-            @Override
-            public void apply(Void ignored) throws OperationException {
-                getRemotes();
+        service.remoteDelete(project.getLocation(), selectedRemote.getName())
+               .then(ignored -> {
+                   getRemotes();
 
-                project.synchronize();
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                String errorMessage = error.getMessage() != null ? error.getMessage() : constant.remoteDeleteFailed();
-                GitOutputConsole console = gitOutputConsoleFactory.create(REMOTE_REPO_COMMAND_NAME);
-                console.printError(errorMessage);
-                consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-                notificationManager.notify(constant.remoteDeleteFailed(), FAIL, FLOAT_MODE);
-            }
-        });
+                   project.synchronize();
+               })
+               .catchError(error -> {
+                   String errorMessage = error.getMessage() != null ? error.getMessage() : constant.remoteDeleteFailed();
+                   GitOutputConsole console = gitOutputConsoleFactory.create(REMOTE_REPO_COMMAND_NAME);
+                   console.printError(errorMessage);
+                   consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
+                   notificationManager.notify(constant.remoteDeleteFailed(), FAIL, FLOAT_MODE);
+               });
     }
 
     /**

@@ -95,7 +95,7 @@ public class BranchPresenterTest extends BaseTest {
         when(selectedBranch.isRemote()).thenReturn(IS_REMOTE);
         when(selectedBranch.isActive()).thenReturn(IS_ACTIVE);
 
-        when(service.branchList(anyObject())).thenReturn(branchListPromise);
+        when(service.branchList(anyObject(), anyObject())).thenReturn(branchListPromise);
         when(branchListPromise.then(any(Operation.class))).thenReturn(branchListPromise);
         when(branchListPromise.catchError(any(Operation.class))).thenReturn(branchListPromise);
     }
@@ -104,11 +104,11 @@ public class BranchPresenterTest extends BaseTest {
     public void testShowBranchesWhenGetBranchesRequestIsSuccessful() throws Exception {
         final List<Branch> branches = Collections.singletonList(selectedBranch);
 
-        when(service.branchList(anyObject())).thenReturn(branchListPromise);
+        when(service.branchList(anyObject(), anyObject())).thenReturn(branchListPromise);
         when(branchListPromise.then(any(Operation.class))).thenReturn(branchListPromise);
         when(branchListPromise.catchError(any(Operation.class))).thenReturn(branchListPromise);
 
-        presenter.showBranches();
+        presenter.showBranches(project);
 
         verify(branchListPromise).then(branchListCaptor.capture());
         branchListCaptor.getValue().apply(branches);
@@ -131,7 +131,7 @@ public class BranchPresenterTest extends BaseTest {
     public void testOnRenameClickedWhenLocalBranchSelected() throws Exception {
         reset(selectedBranch);
 
-        when(service.branchRename(anyString(), anyString())).thenReturn(voidPromise);
+        when(service.branchRename(anyObject(), anyString(), anyString())).thenReturn(voidPromise);
         when(voidPromise.then(any(Operation.class))).thenReturn(voidPromise);
         when(voidPromise.catchError(any(Operation.class))).thenReturn(voidPromise);
 
@@ -160,7 +160,7 @@ public class BranchPresenterTest extends BaseTest {
     public void testOnRenameClickedWhenRemoteBranchSelectedAndUserConfirmRename() throws Exception {
         reset(selectedBranch);
 
-        when(service.branchRename(anyString(), anyString())).thenReturn(voidPromise);
+        when(service.branchRename(anyObject(), anyString(), anyString())).thenReturn(voidPromise);
         when(voidPromise.then(any(Operation.class))).thenReturn(voidPromise);
         when(voidPromise.catchError(any(Operation.class))).thenReturn(voidPromise);
 
@@ -188,7 +188,7 @@ public class BranchPresenterTest extends BaseTest {
         voidPromiseCaptor.getValue().apply(null);
 
         verify(selectedBranch, times(2)).getDisplayName();
-        verify(service, times(2)).branchList(eq(LIST_ALL));
+        verify(service, times(2)).branchList(anyObject(), eq(LIST_ALL));
         verify(console, never()).printError(anyString());
         verify(notificationManager, never()).notify(anyString());
         verify(constant, never()).branchRenameFailed();
@@ -196,13 +196,13 @@ public class BranchPresenterTest extends BaseTest {
 
     /** Select mock branch for testing. */
     private void selectBranch() {
-        presenter.showBranches();
+        presenter.showBranches(project);
         presenter.onBranchSelected(selectedBranch);
     }
 
     @Test
     public void testOnDeleteClickedWhenBranchDeleteRequestIsSuccessful() throws Exception {
-        when(service.branchDelete(anyString(), anyBoolean())).thenReturn(voidPromise);
+        when(service.branchDelete(any(Path.class), anyString(), anyBoolean())).thenReturn(voidPromise);
         when(voidPromise.then(any(Operation.class))).thenReturn(voidPromise);
         when(voidPromise.catchError(any(Operation.class))).thenReturn(voidPromise);
 
@@ -213,7 +213,7 @@ public class BranchPresenterTest extends BaseTest {
         voidPromiseCaptor.getValue().apply(null);
 
         verify(selectedBranch).getName();
-        verify(service, times(2)).branchList(eq(LIST_ALL));
+        verify(service, times(2)).branchList(anyObject(), eq(LIST_ALL));
         verify(constant, never()).branchDeleteFailed();
         verify(console, never()).printError(anyString());
         verify(notificationManager, never()).notify(anyString());
@@ -221,7 +221,7 @@ public class BranchPresenterTest extends BaseTest {
 
     @Test
     public void testOnCheckoutClickedWhenSelectedNotRemoteBranch() throws Exception {
-        when(service.checkout(any(CheckoutRequest.class))).thenReturn(stringPromise);
+        when(service.checkout(any(Path.class), any(CheckoutRequest.class))).thenReturn(stringPromise);
         when(stringPromise.then(any(Operation.class))).thenReturn(stringPromise);
         when(stringPromise.catchError(any(Operation.class))).thenReturn(stringPromise);
 
@@ -240,7 +240,7 @@ public class BranchPresenterTest extends BaseTest {
 
     @Test
     public void testOnCheckoutClickedWhenSelectedRemoteBranch() throws Exception {
-        when(service.checkout(any(CheckoutRequest.class))).thenReturn(stringPromise);
+        when(service.checkout(any(Path.class), any(CheckoutRequest.class))).thenReturn(stringPromise);
         when(stringPromise.then(any(Operation.class))).thenReturn(stringPromise);
         when(stringPromise.catchError(any(Operation.class))).thenReturn(stringPromise);
 
@@ -258,14 +258,14 @@ public class BranchPresenterTest extends BaseTest {
 
     @Test
     public void testOnCreateClickedWhenBranchCreateRequestIsSuccessful() throws Exception {
-        when(service.branchCreate(anyString(), anyString())).thenReturn(branchPromise);
+        when(service.branchCreate(any(Path.class), anyString(), anyString())).thenReturn(branchPromise);
         when(branchPromise.then(any(Operation.class))).thenReturn(branchPromise);
         when(branchPromise.catchError(any(Operation.class))).thenReturn(branchPromise);
 
         InputDialog inputDialog = mock(InputDialog.class);
         when(dialogFactory.createInputDialog(anyString(), anyString(), anyObject(), anyObject())).thenReturn(inputDialog);
 
-        presenter.showBranches();
+        presenter.showBranches(project);
         presenter.onCreateClicked();
 
         verify(dialogFactory).createInputDialog(anyString(), anyString(), inputCallbackCaptor.capture(), anyObject());
@@ -276,8 +276,8 @@ public class BranchPresenterTest extends BaseTest {
         branchCaptor.getValue().apply(selectedBranch);
 
         verify(constant).branchTypeNew();
-        verify(service).branchCreate(anyString(), anyString());
-        verify(service, times(2)).branchList(eq(LIST_ALL));
+        verify(service).branchCreate(any(Path.class), anyString(), anyString());
+        verify(service, times(2)).branchList(anyObject(), eq(LIST_ALL));
     }
 
     @Test

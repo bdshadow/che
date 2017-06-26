@@ -17,6 +17,7 @@ import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsole;
@@ -45,6 +46,8 @@ public class CheckoutReferencePresenter implements CheckoutReferenceView.ActionD
     private final GitOutputConsoleFactory gitOutputConsoleFactory;
     private final ProcessesPanelPresenter consolesPanelPresenter;
 
+    private Project project;
+
     @Inject
     public CheckoutReferencePresenter(CheckoutReferenceView view,
                                       GitServiceClient service,
@@ -66,7 +69,8 @@ public class CheckoutReferencePresenter implements CheckoutReferenceView.ActionD
     }
 
     /** Show dialog. */
-    public void showDialog() {
+    public void showDialog(Project project) {
+        this.project = project;
         view.setCheckoutButEnableState(false);
         view.showDialog();
     }
@@ -79,7 +83,7 @@ public class CheckoutReferencePresenter implements CheckoutReferenceView.ActionD
     @Override
     public void onCheckoutClicked(final String reference) {
 
-        service.checkout(dtoFactory.createDto(CheckoutRequest.class).withName(reference))
+        service.checkout(project.getLocation(), dtoFactory.createDto(CheckoutRequest.class).withName(reference))
                .then(branchName -> {
                    appContext.getRootProject().synchronize()
                              .then(arg -> {

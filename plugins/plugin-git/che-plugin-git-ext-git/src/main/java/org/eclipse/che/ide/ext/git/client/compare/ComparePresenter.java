@@ -104,7 +104,7 @@ public class ComparePresenter implements CompareView.ActionDelegate {
         final Path relPath = file.getLocation().removeFirstSegments(project.get().getLocation().segmentCount());
 
         if (status.equals(DELETED)) {
-            service.showFileContent(relPath, revision)
+            service.showFileContent(project.get().getLocation(), relPath, revision)
                    .then(content -> {
                        view.setTitle(file.getLocation().toString());
                        view.setColumnTitles(locale.compareYourVersionTitle(), revision + locale.compareReadOnlyTitle());
@@ -114,7 +114,7 @@ public class ComparePresenter implements CompareView.ActionDelegate {
                        notificationManager.notify(error.getMessage(), FAIL, NOT_EMERGE_MODE);
                    });
         } else {
-            service.showFileContent(relPath, revision)
+            service.showFileContent(project.get().getLocation(), relPath, revision)
                    .then(content -> {
                        showCompare(content.getContent());
                    })
@@ -142,9 +142,11 @@ public class ComparePresenter implements CompareView.ActionDelegate {
                                             @Nullable final String revisionB) {
         this.compareWithLatest = false;
 
+        final Path projectLocation = appContext.getRootProject().getLocation();
+
         view.setTitle(file.toString());
         if (status == Status.ADDED) {
-            service.showFileContent(file, revisionB)
+            service.showFileContent(projectLocation, file, revisionB)
                    .then(response -> {
                        view.setColumnTitles(revisionB + locale.compareReadOnlyTitle(),
                                             revisionA == null ? "" : revisionA + locale.compareReadOnlyTitle());
@@ -154,7 +156,7 @@ public class ComparePresenter implements CompareView.ActionDelegate {
                        notificationManager.notify(error.getMessage(), FAIL, NOT_EMERGE_MODE);
                    });
         } else if (status == Status.DELETED) {
-            service.showFileContent(file, revisionA)
+            service.showFileContent(projectLocation, file, revisionA)
                    .then(response -> {
                        view.setColumnTitles(revisionB + locale.compareReadOnlyTitle(), revisionA + locale.compareReadOnlyTitle());
                        view.show(response.getContent(), "", file.toString(), true);
@@ -163,9 +165,9 @@ public class ComparePresenter implements CompareView.ActionDelegate {
                        notificationManager.notify(error.getMessage(), FAIL, NOT_EMERGE_MODE);
                    });
         } else {
-            service.showFileContent(file, revisionA)
+            service.showFileContent(projectLocation, file, revisionA)
                    .then(contentAResponse -> {
-                       service.showFileContent(file, revisionB)
+                       service.showFileContent(projectLocation, file, revisionB)
                               .then(contentBResponse -> {
                                   view.setColumnTitles(revisionB + locale.compareReadOnlyTitle(),
                                                        revisionA + locale.compareReadOnlyTitle());

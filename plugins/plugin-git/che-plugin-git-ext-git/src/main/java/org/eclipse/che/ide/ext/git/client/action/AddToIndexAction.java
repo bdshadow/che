@@ -72,7 +72,7 @@ public class AddToIndexAction extends GitAction {
         checkState(resources != null);
         final GitOutputConsole console = gitOutputConsoleFactory.create(constant.addToIndexCommandName());
         consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
-        service.getStatus()
+        service.getStatus(appContext.getRootProject().getLocation())
                .then(status -> {
                    if (containsInSelected(status.getUntracked())) {
                        presenter.showDialog();
@@ -97,7 +97,7 @@ public class AddToIndexAction extends GitAction {
             Path path = resources[i].getLocation().removeFirstSegments(1);
             paths[i] = path.segmentCount() == 0 ? Path.EMPTY : path;
         }
-        service.add(false, paths)
+        service.add(appContext.getRootProject().getLocation(), false, paths)
                .then(voidArg -> {
                    console.print(constant.addSuccess());
                    notificationManager.notify(constant.addSuccess());
@@ -109,9 +109,8 @@ public class AddToIndexAction extends GitAction {
     }
 
     private boolean containsInSelected(List<String> items) {
-        Resource[] appContextResources = appContext.getResources();
         for (String item : items) {
-            for (Resource selectedItem : appContextResources) {
+            for (Resource selectedItem : appContext.getResources()) {
                 String selectedItemPath = selectedItem.getLocation()
                                                       .removeFirstSegments(1) // remove project name from path
                                                       .toString();

@@ -69,18 +69,14 @@ public class StatusCommandPresenter {
     }
 
     /** Show status. */
-    public void showStatus() {
-        service.statusText(LONG).then(new Operation<String>() {
-            @Override
-            public void apply(String status) throws OperationException {
-                printGitStatus(status);
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                notificationManager.notify(constant.statusFailed(), FAIL, FLOAT_MODE);
-            }
-        });
+    public void showStatus(Project project) {
+        service.statusText(project.getLocation(), LONG)
+               .then(status -> {
+                   printGitStatus(status);
+               })
+               .catchError(error -> {
+                   notificationManager.notify(constant.statusFailed(), FAIL, FLOAT_MODE);
+               });
     }
 
     /**

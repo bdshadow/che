@@ -132,7 +132,7 @@ public class HistoryPresenter implements HistoryView.ActionDelegate {
     }
 
     private void fetchRevisions() {
-        service.log(selectedPath.isEmpty() ? null : new Path[]{selectedPath},
+        service.log(project.getLocation(), selectedPath.isEmpty() ? null : new Path[]{selectedPath},
                     skip,
                     DEFAULT_PAGE_SIZE,
                     false)
@@ -160,7 +160,7 @@ public class HistoryPresenter implements HistoryView.ActionDelegate {
         final String revisionA = revisions.indexOf(selectedRevision) + 1 == revisions.size() ? null :
                                  revisions.get(revisions.indexOf(selectedRevision) + 1).getId();
         final String revisionB = selectedRevision.getId();
-        service.diff(singletonList(selectedPath.toString()),
+        service.diff(project.getLocation(), singletonList(selectedPath.toString()),
                      NAME_STATUS,
                      true,
                      0,

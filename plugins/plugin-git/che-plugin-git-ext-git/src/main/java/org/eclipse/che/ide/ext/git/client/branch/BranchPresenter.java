@@ -20,6 +20,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.dialogs.DialogFactory;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.outputconsole.GitOutputConsole;
@@ -58,7 +59,8 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     private final AppContext              appContext;
     private final NotificationManager     notificationManager;
 
-    private Branch selectedBranch;
+    private Branch  selectedBranch;
+    private Project project;
 
     /** Create presenter. */
     @Inject
@@ -84,7 +86,8 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     }
 
     /** Open dialog if closed and shows branches. */
-    public void showBranches() {
+    public void showBranches(Project project) {
+        this.project = project;
         getBranches();
     }
 
@@ -117,7 +120,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     }
 
     private void renameBranch(String newName) {
-        service.branchRename(selectedBranch.getDisplayName(), newName)
+        service.branchRename(project.getLocation(), selectedBranch.getDisplayName(), newName)
                .then(ignored -> {
                    getBranches();
                })
@@ -137,7 +140,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     @Override
     public void onDeleteClicked() {
 
-        service.branchDelete(selectedBranch.getName(), true)
+        service.branchDelete(project.getLocation(), selectedBranch.getName(), true)
                .then(ignored -> {
                    getBranches();
                })
@@ -155,10 +158,10 @@ public class BranchPresenter implements BranchView.ActionDelegate {
             checkoutRequest.setName(selectedBranch.getDisplayName());
         }
 
-        service.checkout(checkoutRequest)
+        service.checkout(project.getLocation(), checkoutRequest)
                .then(ignored -> {
                    getBranches();
-                   appContext.getRootProject().synchronize();
+                   project.synchronize();
                })
                .catchError(error -> {
                    handleError(error.getCause(), BRANCH_CHECKOUT_COMMAND_NAME);
@@ -167,7 +170,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
     /** Get the list of branches. */
     private void getBranches() {
-        service.branchList(LIST_ALL)
+        service.branchList(project.getLocation(), LIST_ALL)
                .then(branches -> {
                    if (branches.isEmpty()) {
                        dialogFactory.createMessageDialog(constant.branchTitle(),
@@ -190,7 +193,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                 return;
             }
 
-            service.branchCreate(value, null)
+            service.branchCreate(project.getLocation(), value, null)
                    .then(branch -> {
                        getBranches();
                    })

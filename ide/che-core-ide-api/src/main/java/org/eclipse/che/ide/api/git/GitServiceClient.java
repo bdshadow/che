@@ -43,17 +43,21 @@ public interface GitServiceClient {
     /**
      * Add changes to Git index (temporary storage). Sends request over WebSocket.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param update
      *         if <code>true</code> then never stage new files, but stage modified new contents of tracked files and remove files from
      *         the index if the corresponding files in the working tree have been removed
      * @param paths
      *         pattern of the files to be added, default is "." (all files are added)
      */
-    Promise<Void> add(boolean update, Path[] paths);
+    Promise<Void> add(Path project, boolean update, Path[] paths);
 
     /**
      * Fetch changes from remote repository to local one (sends request over WebSocket).
      *
+     * @param project
+     *         project root of GIT repository
      * @param remote
      *         remote repository's name
      * @param refspec
@@ -68,58 +72,70 @@ public interface GitServiceClient {
      * @param removeDeletedRefs
      *         if <code>true</code> then delete removed refs from local repository
      */
-    Promise<Void> fetch(String remote, List<String> refspec, boolean removeDeletedRefs);
+    Promise<Void> fetch(Path project, String remote, List<String> refspec, boolean removeDeletedRefs);
 
     /**
      * Get the list of the branches. For now, all branches cannot be returned at once, so the parameter <code>remote</code> tells to get
      * remote branches if <code>true</code> or local ones (if <code>false</code>).
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param mode
      *         get remote branches
      */
-    Promise<List<Branch>> branchList(BranchListMode mode);
+    Promise<List<Branch>> branchList(Path project, BranchListMode mode);
 
     /**
      * Delete branch.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param name
      *         name of the branch to delete
      * @param force
      *         force if <code>true</code> delete branch {@code name} even if it is not fully merged
      */
-    Promise<Void> branchDelete(String name, boolean force);
+    Promise<Void> branchDelete(Path project, String name, boolean force);
 
     /**
      * Checkout the branch with pointed name.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param oldName
      *         branch's current name
      * @param newName
      *         branch's new name
      */
-    Promise<Void> branchRename(String oldName, String newName);
+    Promise<Void> branchRename(Path project, String oldName, String newName);
 
     /**
      * Create new branch with pointed name.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param name
      *         new branch's name
      * @param startPoint
      *         name of a commit at which to start the new branch
      */
-    Promise<Branch> branchCreate(String name, String startPoint);
+    Promise<Branch> branchCreate(Path project, String name, String startPoint);
 
     /**
      * Checkout the branch with pointed name.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param request
      *         checkout request
      */
-    Promise<String> checkout(CheckoutRequest request);
+    Promise<String> checkout(Path project, CheckoutRequest request);
 
     /**
      * Get the list of remote repositories for pointed by {@code projectConfig} parameter one.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param remote
      *         remote repository's name. Can be null in case when it is need to fetch all {@link Remote}
      * @param verbose
@@ -127,35 +143,41 @@ public interface GitServiceClient {
      * @return a promise that provides list {@link Remote} repositories for the {@code workspaceId}, {@code projectConfig},
      * {@code remoteName}, {@code verbose} or rejects with an error.
      */
-    Promise<List<Remote>> remoteList(String remote, boolean verbose);
+    Promise<List<Remote>> remoteList(Path project, String remote, boolean verbose);
 
     /**
      * Adds remote repository to the list of remote repositories.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param name
      *         remote repository's name
      * @param url
      *         remote repository's URL
      */
-    Promise<Void> remoteAdd(String name, String url);
+    Promise<Void> remoteAdd(Path project, String name, String url);
 
     /**
      * Deletes the pointed(by name) remote repository from the list of repositories.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param name
      *         remote repository name to delete
      */
-    Promise<Void> remoteDelete(String name);
+    Promise<Void> remoteDelete(Path project, String name);
 
     /**
      * Remove items from the working tree and the index.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param items
      *         items to remove
      * @param cached
      *         is for removal only from index
      */
-    Promise<Void> remove(Path[] items, boolean cached);
+    Promise<Void> remove(Path project, Path[] items, boolean cached);
 
     /**
      * Reset current HEAD to the specified state. There two types of the reset: <br>
@@ -163,6 +185,8 @@ public interface GitServiceClient {
      * <code>git reset [paths]</code> is the opposite of <code>git add [paths]</code>. 2. Reset the current branch head to [commit] and
      * possibly updates the index (resetting it to the tree of [commit]) and the working tree depending on [mode].
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param commit
      *         commit to which current head should be reset
      * @param resetType
@@ -171,19 +195,23 @@ public interface GitServiceClient {
      *         pattern of the files to reset the index. If <code>null</code> then reset the current branch head to [commit],
      *         else reset received files in index.
      */
-    Promise<Void> reset(String commit, ResetType resetType, Path[] files);
+    Promise<Void> reset(Path project, String commit, ResetType resetType, Path[] files);
 
     /**
      * Initializes new Git repository (over WebSocket).
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param bare
      *         to create bare repository or not
      */
-    Promise<Void> init(boolean bare);
+    Promise<Void> init(Path project, boolean bare);
 
     /**
      * Pull (fetch and merge) changes from remote repository to local one (sends request over WebSocket).
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param refSpec
      *         list of refspec to fetch.
      *         <p/>
@@ -196,11 +224,13 @@ public interface GitServiceClient {
      * @param remote
      *         remote remote repository's name
      */
-    Promise<PullResponse> pull(String refSpec, String remote);
+    Promise<PullResponse> pull(Path project, String refSpec, String remote);
 
     /**
      * Push changes from local repository to remote one (sends request over WebSocket).
      *
+     * @param project
+     *         project
      * @param refSpec
      *         list of refspec to push
      * @param remote
@@ -209,12 +239,14 @@ public interface GitServiceClient {
      *         push refuses to update a remote ref that is not an ancestor of the local ref used to overwrite it. If <code>true</code>
      *         disables the check. This can cause the remote repository to lose commits
      */
-    Promise<PushResponse> push(List<String> refSpec, String remote, boolean force);
+    Promise<PushResponse> push(Path project, List<String> refSpec, String remote, boolean force);
 
     /**
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
      * callback in <code>onSuccess(Revision result)</code>. Sends request over WebSocket.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param message
      *         commit log message
      * @param all
@@ -222,11 +254,13 @@ public interface GitServiceClient {
      * @param amend
      *         indicates that previous commit must be overwritten
      */
-    Promise<Revision> commit(String message, boolean all, boolean amend);
+    Promise<Revision> commit(Path project, String message, boolean all, boolean amend);
 
     /**
      * Performs commit changes from index to repository.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param message
      *         commit log message
      * @param all
@@ -236,19 +270,23 @@ public interface GitServiceClient {
      * @param amend
      *         indicates that previous commit must be overwritten
      */
-    Promise<Revision> commit(String message, boolean all, Path[] files, boolean amend);
+    Promise<Revision> commit(Path project, String message, boolean all, Path[] files, boolean amend);
 
     /**
      * Get repository options.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param requestedConfig
      *         list of config keys
      */
-    Promise<Map<String, String>> config(List<String> requestedConfig);
+    Promise<Map<String, String>> config(Path project, List<String> requestedConfig);
 
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param fileFilter
      *         files for which to show changes
      * @param type
@@ -262,7 +300,7 @@ public interface GitServiceClient {
      * @param commitB
      *         second commit to be compared
      */
-    Promise<String> diff(List<String> fileFilter,
+    Promise<String> diff(Path project, List<String> fileFilter,
                          DiffType type,
                          boolean noRenames,
                          int renameLimit,
@@ -273,6 +311,8 @@ public interface GitServiceClient {
      * Compare commit with index or working tree (depends on {@code cached}), get the diff for pointed file(s) or for the whole project in
      * text format.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param files
      *         files for which to show changes
      * @param type
@@ -286,7 +326,7 @@ public interface GitServiceClient {
      * @param cached
      *         if <code>true</code> then compare commit with index, if <code>false</code>, then compare with working tree.
      */
-    Promise<String> diff(List<String> files,
+    Promise<String> diff(Path project, List<String> files,
                          DiffType type,
                          boolean noRenames,
                          int renameLimit,
@@ -296,16 +336,20 @@ public interface GitServiceClient {
     /**
      * Get the file content from specified revision or branch.
      *
+     * @param project
+     *         project configuration of root GIT repository
      * @param file
      *         file name with its full path
      * @param version
      *         revision or branch where the showed file is present
      */
-    Promise<ShowFileContentResponse> showFileContent(Path file, String version);
+    Promise<ShowFileContentResponse> showFileContent(Path project, Path file, String version);
 
     /**
      * Get log of commits.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param fileFilter
      *         range of files to filter revisions list
      * @param skip
@@ -315,15 +359,17 @@ public interface GitServiceClient {
      * @param plainText
      *         if <code>true</code> the loq response will be in text format
      */
-    Promise<LogResponse> log(@Nullable Path[] fileFilter, int skip, int maxCount, boolean plainText);
+    Promise<LogResponse> log(Path project, @Nullable Path[] fileFilter, int skip, int maxCount, boolean plainText);
 
     /**
      * Merge the pointed commit with current HEAD.
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param commit
      *         commit's reference to merge with
      */
-    Promise<MergeResult> merge(String commit);
+    Promise<MergeResult> merge(Path project, String commit);
 
     /**
      * Gets the working tree status. The status of added, modified or deleted files is shown is written in {@link String}. The format may
@@ -348,22 +394,28 @@ public interface GitServiceClient {
      * ?? folder/test.css
      * </pre>
      *
+     * @param project
+     *         project (root of GIT repository)
      * @param format
      *         to show in short format or not
      */
-    Promise<String> statusText(StatusFormat format);
+    Promise<String> statusText(Path project, StatusFormat format);
 
     /**
      * Returns the current working tree status.
      *
+     * @param project
+     *         the project.
      * @return the promise which either resolves working tree status or rejects with an error
      */
-    Promise<Status> getStatus();
+    Promise<Status> getStatus(Path project);
 
     /**
      * Remove the git repository from given path.
      *
+     * @param project
+     *         the project path
      * @return the promise with success status
      */
-    Promise<Void> deleteRepository();
+    Promise<Void> deleteRepository(Path project);
 }

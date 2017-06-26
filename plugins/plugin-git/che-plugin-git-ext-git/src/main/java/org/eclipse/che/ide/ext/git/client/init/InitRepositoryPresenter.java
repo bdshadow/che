@@ -63,7 +63,7 @@ public class InitRepositoryPresenter {
     public void initRepository(final Project project) {
         final GitOutputConsole console = gitOutputConsoleFactory.create(INIT_COMMAND_NAME);
 
-        service.init(false)
+        service.init(project.getLocation(), false)
                .then(ignored -> {
                    console.print(constant.initSuccess());
                    consolesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);

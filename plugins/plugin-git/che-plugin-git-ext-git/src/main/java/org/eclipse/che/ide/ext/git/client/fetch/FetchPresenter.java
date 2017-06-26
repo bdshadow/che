@@ -20,6 +20,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.notification.StatusNotification;
+import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.BranchSearcher;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
@@ -59,6 +60,8 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     private final AppContext              appContext;
     private final GitLocalizationConstant constant;
 
+    private Project project;
+
     @Inject
     public FetchPresenter(DtoFactory dtoFactory,
                           FetchView view,
@@ -82,7 +85,8 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     }
 
     /** Show dialog. */
-    public void showDialog() {
+    public void showDialog(Project project) {
+        this.project = project;
         view.setRemoveDeleteRefs(false);
         view.setFetchAllBranches(true);
         updateRemotes();
@@ -93,7 +97,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * local).
      */
     private void updateRemotes() {
-        service.remoteList(null, true)
+        service.remoteList(project.getLocation(), null, true)
                .then(remotes -> {
                    view.setRepositories(remotes);
                    updateBranches(LIST_REMOTE);
@@ -116,7 +120,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      *         is a remote mode
      */
     private void updateBranches(@NotNull final BranchListMode remoteMode) {
-        service.branchList(remoteMode)
+        service.branchList(project.getLocation(), remoteMode)
                .then(branches -> {
                    if (LIST_REMOTE.equals(remoteMode)) {
                        view.setRemoteBranches(branchSearcher.getRemoteBranchesToDisplay(view.getRepositoryName(), branches));
@@ -149,7 +153,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
         final StatusNotification notification = notificationManager.notify(constant.fetchProcess(), PROGRESS, FLOAT_MODE);
         final GitOutputConsole console = gitOutputConsoleFactory.create(FETCH_COMMAND_NAME);
 
-        service.fetch(view.getRepositoryName(), getRefs(), view.isRemoveDeletedRefs())
+        service.fetch(project.getLocation(), view.getRepositoryName(), getRefs(), view.isRemoveDeletedRefs())
                .then(ignored -> {
                    console.print(constant.fetchSuccess(remoteUrl));
                    processesPanelPresenter.addCommandOutput(appContext.getDevMachine().getId(), console);
