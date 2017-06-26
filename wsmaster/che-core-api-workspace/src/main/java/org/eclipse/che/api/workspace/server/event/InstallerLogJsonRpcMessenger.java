@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 import java.util.Map;
 
 /**
- * Send infrastructure log events using JSON RPC to the clients.
+ * Send infrastructure log events using JSON-RPC to the clients.
  *
  * @author Anton Korneta
  */
