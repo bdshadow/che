@@ -97,7 +97,7 @@ public class RemoteEventService {
     }
 
     public <T> void publish(String method, T event, BiPredicate<T, Map<String, String>> biPredicate) {
-        subscriptionContexts.getOrDefault(method, new HashSet<>())
+        subscriptionContexts.getOrDefault(method, emptySet())
                             .stream()
                             .filter(context -> biPredicate.test(event, context.scope))
                             .forEach(context -> transmit(context.endpointId, method, event));
