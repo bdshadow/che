@@ -28,6 +28,7 @@ import org.eclipse.che.workspace.infrastructure.docker.config.env.ProjectsRootEn
 import org.eclipse.che.workspace.infrastructure.docker.config.proxy.DockerProxyModule;
 import org.eclipse.che.workspace.infrastructure.docker.config.volume.ExtraVolumeModule;
 import org.eclipse.che.workspace.infrastructure.docker.environment.DockerEnvironmentTypeModule;
+import org.eclipse.che.workspace.infrastructure.docker.output.OutputService;
 import org.eclipse.che.workspace.infrastructure.docker.service.InstallerService;
 import org.eclipse.che.workspace.infrastructure.docker.strategy.ServerEvaluationStrategyModule;
 
@@ -112,5 +113,6 @@ public class DockerInfraModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                         .implement(Bootstrapper.class, Bootstrapper.class)
                         .build(BootstrapperFactory.class));
+        bind(OutputService.class);
     }
 }

@@ -11,33 +11,34 @@
 package org.eclipse.che.api.workspace.server.event;
 
 import org.eclipse.che.api.core.notification.RemoteEventService;
-import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
+import org.eclipse.che.api.workspace.shared.dto.event.InstallerLogEvent;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
 
-import static com.google.common.collect.Sets.newConcurrentHashSet;
-
 /**
- * Send workspace events using JSON RPC to the clients
+ * Send infrastructure log events using JSON RPC to the clients.
+ *
+ * @author Anton Korneta
  */
 @Singleton
-public class WorkspaceJsonRpcMessenger {
+public class InstallerLogJsonRpcMessenger {
     private final RemoteEventService remoteEventService;
 
     @Inject
-    public WorkspaceJsonRpcMessenger(RemoteEventService remoteEventService) {
+    public InstallerLogJsonRpcMessenger(RemoteEventService remoteEventService) {
         this.remoteEventService = remoteEventService;
     }
 
     @PostConstruct
     private void postConstruct() {
-        remoteEventService.register("workspace/statusChanged", WorkspaceStatusEvent.class, this::predicate);
+        remoteEventService.register("installer/log", InstallerLogEvent.class, this::predicate);
     }
 
-    private boolean predicate(WorkspaceStatusEvent event, Map<String, String> scope) {
-        return event.getWorkspaceId().equals(scope.get("workspaceId"));
+    private boolean predicate(InstallerLogEvent event, Map<String, String> scope) {
+        return event.getRuntimeId().getWorkspaceId().equals(scope.get("workspaceId"));
     }
+
 }

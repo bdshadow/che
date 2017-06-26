@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.workspace.infrastructure.docker.server;
+package org.eclipse.che.workspace.infrastructure.docker.output;
 
 import org.eclipse.che.api.core.websocket.commons.WebSocketMessageReceiver;
 import org.eclipse.che.api.core.websocket.impl.BasicWebSocketEndpoint;
@@ -20,20 +20,21 @@ import javax.inject.Inject;
 import javax.websocket.server.ServerEndpoint;
 
 /**
- * JSON-RPC endpoint for agent installers.
+ * JSON-RPC endpoint for output.
  *
- * @author Max Shaposhnik (mshaposhnik@codenvy.com)
+ * @author Sergii Leshchenko
+ * @author Anton Korneta
  */
-@ServerEndpoint(value = InstallerEndpoint.INSTALLER_WEBSOCKET_ENDPOINT_BASE + "{endpoint-id}",
+@ServerEndpoint(value = OutputEndpoint.OUTPUT_WEBSOCKET_ENDPOINT_BASE + "{endpoint-id}",
                 configurator = GuiceInjectorEndpointConfigurator.class)
-public class InstallerEndpoint extends BasicWebSocketEndpoint {
+public class OutputEndpoint extends BasicWebSocketEndpoint {
 
-    public static final String INSTALLER_WEBSOCKET_ENDPOINT_BASE = "/installer/websocket/";
+    public static final String OUTPUT_WEBSOCKET_ENDPOINT_BASE = "/output/websocket/";
 
     @Inject
-    public InstallerEndpoint(WebSocketSessionRegistry registry,
-                             MessagesReSender reSender,
-                             WebSocketMessageReceiver receiver) {
+    public OutputEndpoint(WebSocketSessionRegistry registry,
+                          MessagesReSender reSender,
+                          WebSocketMessageReceiver receiver) {
         super(registry, reSender, receiver);
     }
 }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.event;
 
-import org.eclipse.che.api.core.notification.RemoteSubscriptionManager;
+import org.eclipse.che.api.core.notification.RemoteEventService;
 import org.eclipse.che.api.workspace.shared.dto.event.ServerStatusEvent;
 
 import javax.annotation.PostConstruct;
@@ -23,16 +23,16 @@ import java.util.Map;
  */
 @Singleton
 public class ServerStatusJsonRpcMessenger {
-    private final RemoteSubscriptionManager remoteSubscriptionManager;
+    private final RemoteEventService remoteEventService;
 
     @Inject
-    public ServerStatusJsonRpcMessenger(RemoteSubscriptionManager remoteSubscriptionManager) {
-        this.remoteSubscriptionManager = remoteSubscriptionManager;
+    public ServerStatusJsonRpcMessenger(RemoteEventService remoteEventService) {
+        this.remoteEventService = remoteEventService;
     }
 
     @PostConstruct
     private void postConstruct() {
-        remoteSubscriptionManager.register("server/statusChanged", ServerStatusEvent.class, this::predicate);
+        remoteEventService.register("server/statusChanged", ServerStatusEvent.class, this::predicate);
     }
 
     private boolean predicate(ServerStatusEvent event, Map<String, String> scope) {

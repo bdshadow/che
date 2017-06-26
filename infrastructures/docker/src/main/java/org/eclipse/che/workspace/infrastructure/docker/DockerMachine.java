@@ -14,6 +14,7 @@ import com.google.inject.assistedinject.Assisted;
 
 import org.eclipse.che.api.core.model.workspace.runtime.Machine;
 import org.eclipse.che.api.core.model.workspace.runtime.ServerStatus;
+import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.workspace.server.model.impl.ServerImpl;
 import org.eclipse.che.api.workspace.server.spi.InfrastructureException;
 import org.eclipse.che.api.workspace.server.spi.InternalInfrastructureException;
@@ -98,6 +99,7 @@ public class DockerMachine implements Machine {
     private final boolean                          snapshotUseRegistry;
     private final ContainerInfo                    info;
     private final ServerEvaluationStrategyProvider provider;
+    private final LineConsumer                     outConsumer;
 
     private Map<String, ServerImpl> servers;
 
@@ -109,7 +111,8 @@ public class DockerMachine implements Machine {
                          @Assisted("container") String container,
                          @Assisted("image") String image,
                          ServerEvaluationStrategyProvider provider,
-                         DockerMachineStopDetector dockerMachineStopDetector) throws InfrastructureException {
+                         DockerMachineStopDetector dockerMachineStopDetector,
+                         LineConsumer outputConsumer) throws InfrastructureException {
         this.container = container;
         this.docker = docker;
         this.image = image;
@@ -117,6 +120,7 @@ public class DockerMachine implements Machine {
         this.registryNamespace = registryNamespace;
         this.snapshotUseRegistry = snapshotUseRegistry;
         this.dockerMachineStopDetector = dockerMachineStopDetector;
+        this.outConsumer = outputConsumer;
         try {
             this.info = docker.inspectContainer(container);
         } catch (IOException e) {
@@ -132,7 +136,7 @@ public class DockerMachine implements Machine {
 
     @Override
     public Map<String, ServerImpl> getServers() {
-        if(servers == null) {
+        if (servers == null) {
             ServerEvaluationStrategy strategy = provider.get();
             servers = strategy.getServers(info, "localhost", Collections.emptyMap());
         }
@@ -200,7 +204,7 @@ public class DockerMachine implements Machine {
                ", image='" + image + '\'' +
                ", registry='" + registry + '\'' +
                ", registryNamespace='" + registryNamespace + '\'' +
-               ", snapshotUseRegistry='" + snapshotUseRegistry  +
+               ", snapshotUseRegistry='" + snapshotUseRegistry +
                ", info=" + info +
                ", provider=" + provider +
                '}';
@@ -210,7 +214,7 @@ public class DockerMachine implements Machine {
     public DockerMachineSource saveToSnapshot() throws SnapshotException {
         try {
             String image = generateRepository();
-            if(!snapshotUseRegistry) {
+            if (!snapshotUseRegistry) {
                 commitContainer(image, LATEST_TAG);
                 return new DockerMachineSource(image).withTag(LATEST_TAG);
             }
@@ -223,14 +227,13 @@ public class DockerMachine implements Machine {
             commitContainer(fullRepo, LATEST_TAG);
             //TODO fix this workaround. Docker image is not visible after commit when using swarm
             Thread.sleep(2000);
-            final ProgressLineFormatterImpl lineFormatter = new ProgressLineFormatterImpl();
-            final String digest = docker.push(pushParams,
-                                              progressMonitor -> {
-//                                                  try {
-//                                                      outputConsumer.writeLine(lineFormatter.format(progressMonitor));
-//                                                  } catch (IOException ignored) {
-//                                                  }
-                                              });
+            final ProgressLineFormatterImpl fmt = new ProgressLineFormatterImpl();
+            final String digest = docker.push(pushParams, status -> {
+                try {
+                    outConsumer.writeLine(fmt.format(status));
+                } catch (IOException ignored) {
+                }
+            });
             docker.removeImage(RemoveImageParams.create(fullRepo).withForce(false));
             return new DockerMachineSource(image).withRegistry(registry).withDigest(digest).withTag(LATEST_TAG);
         } catch (IOException ioEx) {

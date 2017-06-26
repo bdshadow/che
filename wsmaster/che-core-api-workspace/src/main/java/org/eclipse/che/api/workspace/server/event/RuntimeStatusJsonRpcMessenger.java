@@ -10,21 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.event;
 
-import org.eclipse.che.api.core.jsonrpc.commons.RequestHandlerConfigurator;
-import org.eclipse.che.api.core.jsonrpc.commons.RequestTransmitter;
-import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.notification.RemoteSubscriptionManager;
-import org.eclipse.che.api.workspace.shared.dto.event.MachineStatusEvent;
+import org.eclipse.che.api.core.notification.RemoteEventService;
 import org.eclipse.che.api.workspace.shared.dto.event.RuntimeStatusEvent;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 
@@ -33,16 +25,16 @@ import static com.google.common.collect.Sets.newConcurrentHashSet;
  */
 @Singleton
 public class RuntimeStatusJsonRpcMessenger {
-    private final RemoteSubscriptionManager remoteSubscriptionManager;
+    private final RemoteEventService remoteEventService;
 
     @Inject
-    public RuntimeStatusJsonRpcMessenger(RemoteSubscriptionManager remoteSubscriptionManager) {
-        this.remoteSubscriptionManager = remoteSubscriptionManager;
+    public RuntimeStatusJsonRpcMessenger(RemoteEventService remoteEventService) {
+        this.remoteEventService = remoteEventService;
     }
 
     @PostConstruct
     private void postConstruct() {
-        remoteSubscriptionManager.register("runtime/statusChanged", RuntimeStatusEvent.class, this::predicate);
+        remoteEventService.register("runtime/statusChanged", RuntimeStatusEvent.class, this::predicate);
     }
 
     private boolean predicate(RuntimeStatusEvent event, Map<String, String> scope) {
