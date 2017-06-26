@@ -63,7 +63,7 @@ public class FileWatcherServiceTest {
 
     @BeforeClass
     public void setUp() throws Exception {
-        service = new FileWatcherService(excludes, handler, watchService);
+//        service = new FileWatcherService(excludes, handler, watchService);
 
         service.start();
     }

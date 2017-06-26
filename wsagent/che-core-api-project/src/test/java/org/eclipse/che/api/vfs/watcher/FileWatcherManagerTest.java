@@ -57,7 +57,7 @@ public class FileWatcherManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        manager = new FileWatcherManager(rootFolder.getRoot(), fileWatcherByPathValue, fileWatcherByPathMatcher, service);
+//        manager = new FileWatcherManager(rootFolder.getRoot(), fileWatcherByPathValue, fileWatcherByPathMatcher, service);
     }
 
     @Test

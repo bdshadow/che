@@ -34,18 +34,23 @@ public class FileWatcherManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileWatcherManager.class);
 
-    private final FileWatcherByPathValue   fileWatcherByPathValue;
-    private final FileWatcherByPathMatcher fileWatcherByPathMatcher;
-    private final FileWatcherService       service;
-    private final Path                     root;
+    private final FileWatcherByPathValue             fileWatcherByPathValue;
+    private final FileWatcherByPathMatcher           fileWatcherByPathMatcher;
+    private final FileWatcherService                 service;
+    private final Path                               root;
+    private final FileWatcherExcludePatternsRegistry excludePatternsRegistry;
 
     @Inject
-    public FileWatcherManager(@Named("che.user.workspaces.storage") File root, FileWatcherByPathValue watcherByPathValue,
-                              FileWatcherByPathMatcher watcherByPathMatcher, FileWatcherService service) {
+    public FileWatcherManager(@Named("che.user.workspaces.storage") File root,
+                              FileWatcherByPathValue watcherByPathValue,
+                              FileWatcherByPathMatcher watcherByPathMatcher,
+                              FileWatcherService service,
+                              FileWatcherExcludePatternsRegistry excludePatternsRegistry) {
         this.fileWatcherByPathMatcher = watcherByPathMatcher;
         this.fileWatcherByPathValue = watcherByPathValue;
         this.service = service;
         this.root = root.toPath().normalize().toAbsolutePath();
+        this.excludePatternsRegistry = excludePatternsRegistry;
     }
 
     /**
@@ -86,7 +91,6 @@ public class FileWatcherManager {
      *         consumer for modify event
      * @param delete
      *         consumer for delete event
-     *
      * @return operation set identifier
      */
     public int registerByPath(String path, Consumer<String> create, Consumer<String> modify, Consumer<String> delete) {
@@ -136,7 +140,6 @@ public class FileWatcherManager {
      *         consumer for modify event
      * @param delete
      *         consumer for delete event
-     *
      * @return operation set identifier
      */
     public int registerByMatcher(PathMatcher matcher, Consumer<String> create, Consumer<String> modify, Consumer<String> delete) {
@@ -161,5 +164,21 @@ public class FileWatcherManager {
         LOG.debug("Canceling registering of an operation with id '{}' registered to path matcher", id);
 
         fileWatcherByPathMatcher.unwatch(id);
+    }
+
+    public void addExcludeMatcher(PathMatcher exclude) {
+        excludePatternsRegistry.addExcludeMatcher(exclude);
+    }
+
+    public void removeExcludeMatcher(PathMatcher exclude) {
+        excludePatternsRegistry.removeExcludeMatcher(exclude);
+    }
+
+    public void addIncludeMatcher(PathMatcher matcher) {
+        excludePatternsRegistry.addIncludeMatcher(matcher);
+    }
+
+    public void removeIncludeMatcher(PathMatcher matcher) {
+        excludePatternsRegistry.removeIncludeMatcher(matcher);
     }
 }
