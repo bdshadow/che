@@ -29,10 +29,15 @@ import static java.util.Collections.emptySet;
 /**
  * Dispatches events to subscribed listeners via JSON-RPC.
  *
- * <p>It also can republish events from {@link EventService event service} if
- * it is configured by {@link #register} method.
+ * <p>Publishing of events can be performed:
+ * <ul>
+ * <li>manually by {@link #publish(String, Object, BiPredicate) publish} method;</li>
+ * <li>automatically from {@link EventService} if corresponding event is
+ * registered to republish by {@link #register(String, Class, BiPredicate) register} method.</li>
+ * </ul>
  *
- * <p>Json rpc subscribe message example:
+ * <p>For starting receiving events from remote event service client must
+ * subscribe on required events by sending following message:
  * <pre>
  *   {
  *     "jsonrpc":"2.0",
@@ -46,11 +51,11 @@ import static java.util.Collections.emptySet;
  *   }
  * </pre>
  *
- * <p>Json rpc unsubscribe message example:
+ * <p>For stopping receiving events from remote event service client must send following message:
  * <pre>
  *   {
  *     "jsonrpc":"2.0",
- *     "method":"unsubscribe",
+ *     "method":"unSubscribe",
  *     "params": {
  *       "method":"demo/method",
  *         "scope": {
@@ -74,7 +79,7 @@ public class RemoteEventService {
     }
 
     @Inject
-    private void configureSubscription(RequestHandlerConfigurator requestHandlerConfigurator) {
+    private void registerMethods(RequestHandlerConfigurator requestHandlerConfigurator) {
         requestHandlerConfigurator.newConfiguration()
                                   .methodName("subscribe")
                                   .paramsAsDto(EventSubscription.class)
@@ -92,14 +97,25 @@ public class RemoteEventService {
         eventService.subscribe(event -> subscriptionContexts.getOrDefault(method, new HashSet<>())
                                                             .stream()
                                                             .filter(context -> biPredicate.test(event, context.scope))
-                                                            .forEach(context -> transmit(context.endpointId, method, event)),
+                                                            .forEach(context -> transmit(context.endpointId, method,
+                                                                                         event)),
                                eventType);
     }
 
-    public <T> void publish(String method, T event, BiPredicate<T, Map<String, String>> biPredicate) {
+    /**
+     * Publishes events to subscribed clients.
+     *
+     * @param method
+     *         method to which will be published event
+     * @param event
+     *         event to publish
+     * @param predicate
+     *         predicate for filtering clients
+     */
+    public <T> void publish(String method, T event, BiPredicate<T, Map<String, String>> predicate) {
         subscriptionContexts.getOrDefault(method, emptySet())
                             .stream()
-                            .filter(context -> biPredicate.test(event, context.scope))
+                            .filter(context -> predicate.test(event, context.scope))
                             .forEach(context -> transmit(context.endpointId, method, event));
     }
 
@@ -110,7 +126,8 @@ public class RemoteEventService {
 
     private void consumeUnSubscriptionRequest(String endpointId, EventSubscription eventSubscription) {
         subscriptionContexts.getOrDefault(eventSubscription.getMethod(), emptySet())
-                            .removeIf(subscriptionContext -> Objects.equals(subscriptionContext.endpointId, endpointId));
+                            .removeIf(
+                                    subscriptionContext -> Objects.equals(subscriptionContext.endpointId, endpointId));
     }
 
     private <T> void transmit(String endpointId, String method, T event) {

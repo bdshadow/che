@@ -28,7 +28,7 @@ import java.util.function.BiConsumer;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.eclipse.che.plugin.docker.client.LogMessage.Type.DOCKER;
-import static org.eclipse.che.workspace.infrastructure.docker.output.OutputService.MACHINE_LOG_METHOD_NAME;
+import static org.eclipse.che.workspace.infrastructure.docker.output.OutputJsonRpcService.MACHINE_LOG_METHOD_NAME;
 
 /**
  * Produces machine logs publishers.
@@ -46,7 +46,7 @@ public class MachineLoggersFactory {
     }
 
     /**
-     * Produces new instance of machine progress monitor.
+     * Produces new instance of {@link ProgressMonitor}.
      *
      * @param machineName
      *         name of machine
@@ -58,7 +58,7 @@ public class MachineLoggersFactory {
     }
 
     /**
-     * Produces new instance of {@link MachineLogMessageProcessor}.
+     * Produces new instance of {@link MessageProcessor}.
      *
      * @param machineName
      *         name of machine
@@ -72,7 +72,7 @@ public class MachineLoggersFactory {
     /**
      * Supplies text and stream to {@link MachineLogsBiConsumer} from {@link LogMessage}.
      */
-    private class MachineLogMessageProcessor implements MessageProcessor<LogMessage> {
+    private static class MachineLogMessageProcessor implements MessageProcessor<LogMessage> {
 
         private final BiConsumer<String, String> biConsumer;
 
@@ -94,7 +94,7 @@ public class MachineLoggersFactory {
     /**
      * Supplies text and stream to {@link MachineLogsBiConsumer} from {@link ProgressStatus}.
      */
-    private class MachineProgressMonitor implements ProgressMonitor {
+    private static class MachineProgressMonitor implements ProgressMonitor {
 
         private final ProgressLineFormatterImpl  formatter;
         private final BiConsumer<String, String> biConsumer;

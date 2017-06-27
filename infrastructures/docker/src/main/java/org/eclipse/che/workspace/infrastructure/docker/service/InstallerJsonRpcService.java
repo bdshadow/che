@@ -25,18 +25,16 @@ import javax.inject.Singleton;
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
  */
 @Singleton
-public class InstallerService {
-    private final RequestHandlerConfigurator requestHandler;
+public class InstallerJsonRpcService {
     private final EventService               eventService;
 
     @Inject
-    public InstallerService(RequestHandlerConfigurator requestHandler, EventService eventService) {
-        this.requestHandler = requestHandler;
+    public InstallerJsonRpcService(EventService eventService) {
         this.eventService = eventService;
     }
 
-    @PostConstruct
-    public void configureMethods() {
+    @Inject
+    public void configureMethods(RequestHandlerConfigurator requestHandler) {
         requestHandler.newConfiguration()
                       .methodName("bootstrapper/statusChanged")
                       .paramsAsDto(BootstrapperStatusEvent.class)
@@ -50,13 +48,11 @@ public class InstallerService {
                       .withConsumer(this::handleInstallerStatus);
     }
 
-    private void handleInstallerStatus(InstallerStatusEvent installerStatusEvent) {
-        //TODO: spi actions here
+    public void handleInstallerStatus(InstallerStatusEvent installerStatusEvent) {
         eventService.publish(installerStatusEvent);
     }
 
     private void handleBootstrapperStatus(BootstrapperStatusEvent bootstrapperStatusEvent) {
-        //TODO: spi actions here
         eventService.publish(bootstrapperStatusEvent);
     }
 }

@@ -15,37 +15,30 @@ import org.eclipse.che.api.core.notification.RemoteEventService;
 import org.eclipse.che.api.workspace.shared.dto.event.InstallerLogEvent;
 import org.eclipse.che.api.workspace.shared.dto.event.MachineLogEvent;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Map;
-import java.util.function.BiPredicate;
 
 /**
- * Defines a set of service methods for output
- * and corresponding set of handlers for these methods.
+ * Defines a JSON-RPC methods for handling machine output.
  *
  * @author Sergii Leshchenko
  * @author Anton Korneta
  */
 @Singleton
-public class OutputService {
+public class OutputJsonRpcService {
 
     public static final String INSTALLER_LOG_METHOD_NAME = "installer/log";
     public static final String MACHINE_LOG_METHOD_NAME   = "machine/log";
 
-    private final RequestHandlerConfigurator requestHandler;
-    private final RemoteEventService         remoteEventService;
+    private final RemoteEventService remoteEventService;
 
     @Inject
-    public OutputService(RequestHandlerConfigurator requestHandler,
-                         RemoteEventService manager) {
-        this.requestHandler = requestHandler;
+    public OutputJsonRpcService(RemoteEventService manager) {
         this.remoteEventService = manager;
     }
 
-    @PostConstruct
-    public void configureMethods() {
+    @Inject
+    public void configureMethods(RequestHandlerConfigurator requestHandler) {
         requestHandler.newConfiguration()
                       .methodName(INSTALLER_LOG_METHOD_NAME)
                       .paramsAsDto(InstallerLogEvent.class)
