@@ -53,14 +53,14 @@
 
     <!-- Select Stack -->
     <che-label-container che-label-name="Select Stack"
-                         che-label-description="Select existing workspace or create it from stack, recipe or image used to define your environment runtime. Workspace environments are used to build and run your project.">
+                         che-label-description="Choose your workspace runtime environment used to build and run your projects.">
       <stack-selector on-stack-select="createWorkspaceController.onStackSelected(stackId)"></stack-selector>
       <!--<stack-selector></stack-selector>-->
     </che-label-container>
 
     <!-- RAM Settings-->
-    <che-label-container che-label-name="Ram Settings"
-                         che-label-description="Configure the RAM form each machine(s) of the workspace.">
+    <che-label-container che-label-name="Ram"
+                         che-label-description="Allocate the workspace machine(s) memory.">
       <ng-form name="ramSettingsForm">
         <ram-settings ng-init="createWorkspaceController.registerForm('ramSettings', ramSettingsForm)"
                       machines="createWorkspaceController.stackMachines"
