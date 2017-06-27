@@ -18,14 +18,22 @@ import org.eclipse.che.api.workspace.shared.dto.event.MachineLogEvent;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Map;
+import java.util.function.BiPredicate;
 
 /**
- * Service for handling output.
+ * Defines a set of service methods for output
+ * and corresponding set of handlers for these methods.
  *
  * @author Sergii Leshchenko
+ * @author Anton Korneta
  */
 @Singleton
 public class OutputService {
+
+    public static final String INSTALLER_LOG_METHOD_NAME = "installer/log";
+    public static final String MACHINE_LOG_METHOD_NAME   = "machine/log";
+
     private final RequestHandlerConfigurator requestHandler;
     private final RemoteEventService         remoteEventService;
 
@@ -39,20 +47,20 @@ public class OutputService {
     @PostConstruct
     public void configureMethods() {
         requestHandler.newConfiguration()
-                      .methodName("installer/log")
+                      .methodName(INSTALLER_LOG_METHOD_NAME)
                       .paramsAsDto(InstallerLogEvent.class)
                       .noResult()
                       .withConsumer(this::handleInstallerLog);
 
         requestHandler.newConfiguration()
-                      .methodName("machine/log")
+                      .methodName(MACHINE_LOG_METHOD_NAME)
                       .paramsAsDto(MachineLogEvent.class)
                       .noResult()
                       .withConsumer(this::handleMachineLog);
     }
 
     private void handleInstallerLog(InstallerLogEvent installerStatusEvent) {
-        remoteEventService.publish("installer/log",
+        remoteEventService.publish(INSTALLER_LOG_METHOD_NAME,
                                    installerStatusEvent,
                                    (event, scope) -> event.getRuntimeId()
                                                           .getWorkspaceId()
@@ -60,7 +68,7 @@ public class OutputService {
     }
 
     private void handleMachineLog(MachineLogEvent installerStatusEvent) {
-        remoteEventService.publish("machine/log",
+        remoteEventService.publish(MACHINE_LOG_METHOD_NAME,
                                    installerStatusEvent,
                                    (event, scope) -> event.getRuntimeId()
                                                           .getWorkspaceId()

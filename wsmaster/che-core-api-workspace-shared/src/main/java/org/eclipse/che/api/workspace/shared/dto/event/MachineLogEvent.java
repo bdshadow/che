@@ -39,4 +39,16 @@ public interface MachineLogEvent {
 
     MachineLogEvent withRuntimeId(RuntimeIdentityDto runtimeId);
 
+    String getTime();
+
+    void setTime(String time);
+
+    MachineLogEvent withTime(String time);
+
+    String getStream();
+
+    void setStream(String stream);
+
+    MachineLogEvent withStream(String stream);
+
 }

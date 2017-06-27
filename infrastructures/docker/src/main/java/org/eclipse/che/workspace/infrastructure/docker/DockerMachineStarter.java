@@ -18,9 +18,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.core.model.workspace.config.ServerConfig;
 import org.eclipse.che.api.core.model.workspace.runtime.RuntimeIdentity;
-import org.eclipse.che.api.core.notification.RemoteEventService;
 import org.eclipse.che.api.core.util.FileCleaner;
-import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.core.util.SystemInfo;
 import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
 import org.eclipse.che.api.workspace.server.spi.InfrastructureException;
@@ -30,7 +28,8 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.concurrent.LoggingUncaughtExceptionHandler;
 import org.eclipse.che.commons.lang.os.WindowsPathEscaper;
 import org.eclipse.che.plugin.docker.client.DockerConnector;
-import org.eclipse.che.plugin.docker.client.ProgressLineFormatterImpl;
+import org.eclipse.che.plugin.docker.client.LogMessage;
+import org.eclipse.che.plugin.docker.client.MessageProcessor;
 import org.eclipse.che.plugin.docker.client.ProgressMonitor;
 import org.eclipse.che.plugin.docker.client.UserSpecificDockerRegistryCredentialsProvider;
 import org.eclipse.che.plugin.docker.client.exception.ContainerNotFoundException;
@@ -58,6 +57,7 @@ import org.eclipse.che.plugin.docker.client.params.network.ConnectContainerToNet
 import org.eclipse.che.workspace.infrastructure.docker.exception.SourceNotFoundException;
 import org.eclipse.che.workspace.infrastructure.docker.model.DockerContainerConfig;
 import org.eclipse.che.workspace.infrastructure.docker.monit.DockerMachineStopDetector;
+import org.eclipse.che.workspace.infrastructure.docker.output.MachineLoggersFactory;
 import org.eclipse.che.workspace.infrastructure.docker.strategy.ServerEvaluationStrategyProvider;
 import org.slf4j.Logger;
 
@@ -154,7 +154,7 @@ public class DockerMachineStarter {
     private final String[]                                      dnsResolvers;
     private       ServerEvaluationStrategyProvider              serverEvaluationStrategyProvider;
     private final Map<String, String>                           buildArgs;
-    private final RemoteEventService                            remoteEventService;
+    private final MachineLoggersFactory                         machineLoggerFactory;
 
     @Inject
     public DockerMachineStarter(DockerConnector docker,
@@ -183,7 +183,7 @@ public class DockerMachineStarter {
                                 @Nullable @Named("che.docker.dns_resolvers") String[] dnsResolvers,
                                 ServerEvaluationStrategyProvider serverEvaluationStrategyProvider,
                                 @Named("che.docker.build_args") Map<String, String> buildArgs,
-                                RemoteEventService remoteEventService) {
+                                MachineLoggersFactory machineLogger) {
         // TODO spi should we move all configuration stuff into infrastructure provisioner and left logic of container start here only
         this.docker = docker;
         this.dockerCredentials = dockerCredentials;
@@ -211,7 +211,7 @@ public class DockerMachineStarter {
         this.dnsResolvers = dnsResolvers;
         this.buildArgs = buildArgs;
         this.serverEvaluationStrategyProvider = serverEvaluationStrategyProvider;
-        this.remoteEventService = remoteEventService;
+        this.machineLoggerFactory = machineLogger;
 
         allMachinesSystemVolumes = removeEmptyAndNullValues(allMachinesSystemVolumes);
         devMachineSystemVolumes = removeEmptyAndNullValues(devMachineSystemVolumes);
@@ -308,15 +308,7 @@ public class DockerMachineStarter {
 
         // copy to not affect/be affected by changes in origin
         containerConfig = new DockerContainerConfig(containerConfig);
-
-        final ProgressLineFormatterImpl fmt = new ProgressLineFormatterImpl();
-        final LineConsumer outConsumer = new MachineLogsLineConsumer(remoteEventService, identity, machineName);
-        final ProgressMonitor progressMonitor = status -> {
-            try {
-                outConsumer.writeLine(fmt.format(status));
-            } catch (IOException ignored) {
-            }
-        };
+        final ProgressMonitor progressMonitor = machineLoggerFactory.newProgressMonitor(machineName, identity);
         String container = null;
         try {
             String image = prepareImage(machineName, containerConfig, progressMonitor);
@@ -334,7 +326,10 @@ public class DockerMachineStarter {
 
             checkContainerIsRunning(container);
 
-            readContainerLogsInSeparateThread(container, workspaceId, containerConfig.getId(), outConsumer);
+            readContainerLogsInSeparateThread(container,
+                                              workspaceId,
+                                              containerConfig.getId(),
+                                              machineLoggerFactory.newLogsProcessor(machineName, identity));
 
             dockerInstanceStopDetector.startDetection(container,
                                                       containerConfig.getId(),
@@ -348,7 +343,7 @@ public class DockerMachineStarter {
                                      image,
                                      serverEvaluationStrategyProvider,
                                      dockerInstanceStopDetector,
-                                     outConsumer);
+                                     progressMonitor);
         } catch (RuntimeException | IOException | InfrastructureException e) {
             cleanUpContainer(container);
             if (e instanceof InfrastructureException) {
@@ -655,11 +650,10 @@ public class DockerMachineStarter {
         }
     }
 
-    // TODO spi fix in #5102
     private void readContainerLogsInSeparateThread(String container,
                                                    String workspaceId,
                                                    String machineId,
-                                                   LineConsumer outputConsumer) {
+                                                   MessageProcessor<LogMessage> logsProcessor) {
         executor.execute(() -> {
             long lastProcessedLogDate = 0;
             boolean isContainerRunning = true;
@@ -670,7 +664,7 @@ public class DockerMachineStarter {
                     docker.getContainerLogs(GetContainerLogsParams.create(container)
                                                                   .withFollow(true)
                                                                   .withSince(lastProcessedLogDate),
-                                            new LogMessagePrinter(outputConsumer));
+                                            logsProcessor);
                     isContainerRunning = false;
                 } catch (SocketTimeoutException ste) {
                     lastProcessedLogDate = System.currentTimeMillis() / 1000L;
