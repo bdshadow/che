@@ -34,7 +34,6 @@ export class CheNamespaceRegistry {
     this.$interval = $interval;
     this.$timeout = $timeout;
     this.namespaces = [];
-    this.namespaces.push({id: 'tets', label: 'test', location: 'test'});
 
     this.caption = 'Namespace';
   }
