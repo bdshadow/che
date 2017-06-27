@@ -300,7 +300,8 @@ public interface GitServiceClient {
      * @param commitB
      *         second commit to be compared
      */
-    Promise<String> diff(Path project, List<String> fileFilter,
+    Promise<String> diff(Path project,
+                         List<String> fileFilter,
                          DiffType type,
                          boolean noRenames,
                          int renameLimit,
@@ -326,7 +327,8 @@ public interface GitServiceClient {
      * @param cached
      *         if <code>true</code> then compare commit with index, if <code>false</code>, then compare with working tree.
      */
-    Promise<String> diff(Path project, List<String> files,
+    Promise<String> diff(Path project,
+                         List<String> files,
                          DiffType type,
                          boolean noRenames,
                          int renameLimit,
