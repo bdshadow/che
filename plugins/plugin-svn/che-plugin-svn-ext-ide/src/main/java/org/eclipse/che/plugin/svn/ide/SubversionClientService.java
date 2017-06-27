@@ -65,7 +65,7 @@ public interface SubversionClientService {
      * @param paths
      *         the paths to remove
      */
-    Promise<CLIOutputResponse> remove(Path[] paths);
+    Promise<CLIOutputResponse> remove(Path project, Path[] paths);
 
     /**
      * Reverts any local changes to provided paths and resolves any conflicted states.
@@ -75,7 +75,7 @@ public interface SubversionClientService {
      * @param paths
      *         the paths to remove
      */
-    Promise<CLIOutputResponse> revert(Path[] paths, String depth);
+    Promise<CLIOutputResponse> revert(Path project, Path[] paths, String depth);
 
     /**
      * Copy provided path.
@@ -105,7 +105,7 @@ public interface SubversionClientService {
      * @param sourceUrl
      *         source URL to merge
      */
-    Promise<CLIOutputResponse> merge(Path target, Path sourceUrl);
+    Promise<CLIOutputResponse> merge(Path project, Path target, Path sourceUrl);
 
     /**
      * Retrieves the information about repository item.
@@ -119,9 +119,9 @@ public interface SubversionClientService {
      * @param credentials
      *         {@link Credentials} object that contains user name and password for authentication
      */
-    Promise<InfoResponse> info(String target, String revision, boolean children, @Nullable Credentials credentials);
+    Promise<InfoResponse> info(Path project, String target, String revision, boolean children, @Nullable Credentials credentials);
 
-    Promise<InfoResponse> info(String target, String revision, boolean children);
+    Promise<InfoResponse> info(Path project, String target, String revision, boolean children);
 
     /**
      * Retrieves the status for the provided paths, or the working copy as a whole.
@@ -198,9 +198,9 @@ public interface SubversionClientService {
                                                     boolean force,
                                                     @Nullable Credentials credentials);
 
-    Promise<CLIOutputResponse> showLog(Path[] paths, String revision);
+    Promise<CLIOutputResponse> showLog(Path project, Path[] paths, String revision);
 
-    Promise<CLIOutputResponse> showDiff(Path[] paths, String revision, @Nullable Credentials credentials);
+    Promise<CLIOutputResponse> showDiff(Path project, Path[] paths, String revision, @Nullable Credentials credentials);
 
     /**
      * Locks the given paths.
@@ -215,7 +215,7 @@ public interface SubversionClientService {
      * @param credentials
      *         {@link Credentials} object that contains user name and password for authentication
      */
-    Promise<CLIOutputResponse> lock(Path[] paths, boolean force, @Nullable Credentials credentials);
+    Promise<CLIOutputResponse> lock(Path project, Path[] paths, boolean force, @Nullable Credentials credentials);
 
     /**
      * Unocks the given paths.
@@ -230,7 +230,7 @@ public interface SubversionClientService {
      * @param credentials
      *         {@link Credentials} object that contains user name and password for authentication
      */
-    Promise<CLIOutputResponse> unlock(Path[] paths, boolean force, @Nullable Credentials credentials);
+    Promise<CLIOutputResponse> unlock(Path project, Path[] paths, boolean force, @Nullable Credentials credentials);
 
     /**
      * Commits the changes in the repository.
@@ -246,7 +246,7 @@ public interface SubversionClientService {
      * @param keepLocks
      *         if true, doesn't unlock files after commiting
      */
-    Promise<CLIOutputWithRevisionResponse> commit(Path[] paths, String message, boolean keepChangeLists, boolean keepLocks);
+    Promise<CLIOutputWithRevisionResponse> commit(Path project, Path[] paths, String message, boolean keepChangeLists, boolean keepLocks);
 
     /**
      * Cleans up recursively the working copy.
@@ -256,11 +256,11 @@ public interface SubversionClientService {
      * @param paths
      *         the paths to clean up
      */
-    Promise<CLIOutputResponse> cleanup(Path[] paths);
+    Promise<CLIOutputResponse> cleanup(Path project, Path[] paths);
 
-    Promise<CLIOutputResponse> showConflicts(Path[] paths);
+    Promise<CLIOutputResponse> showConflicts(Path project, Path[] paths);
 
-    Promise<CLIOutputResponseList> resolve(Map<String, String> resolutions, String depth);
+    Promise<CLIOutputResponseList> resolve(Path project, Map<String, String> resolutions, String depth);
 
     /**
      * Move provided path.
@@ -294,7 +294,7 @@ public interface SubversionClientService {
      * @param path
      *         path to which property sets
      */
-    Promise<CLIOutputResponse> propertySet(String propertyName, String propertyValues, Depth depth, boolean force, Path path);
+    Promise<CLIOutputResponse> propertySet(Path project, String propertyName, String propertyValues, Depth depth, boolean force, Path path);
 
     /**
      * Get specified property for a path or a target.
@@ -306,7 +306,7 @@ public interface SubversionClientService {
      * @param path
      *         path to which property get
      */
-    Promise<CLIOutputResponse> propertyGet(String propertyName, Path path);
+    Promise<CLIOutputResponse> propertyGet(Path project, String propertyName, Path path);
 
     /**
      * Get properties set for a path or a target.
@@ -316,7 +316,7 @@ public interface SubversionClientService {
      * @param path
      *         path to which property get
      */
-    Promise<CLIOutputResponse> propertyList(Path path);
+    Promise<CLIOutputResponse> propertyList(Path project, Path path);
 
     /**
      * Delete specified property from a path or a target.
@@ -332,7 +332,7 @@ public interface SubversionClientService {
      * @param path
      *         path from which property should be deleted
      */
-    Promise<CLIOutputResponse> propertyDelete(String propertyName, Depth depth, boolean force, Path path);
+    Promise<CLIOutputResponse> propertyDelete(Path project, String propertyName, Depth depth, boolean force, Path path);
 
     /**
      * Get the list of all revisions where a given path was modified
@@ -344,7 +344,7 @@ public interface SubversionClientService {
      * @param revisionRange
      *         the range of revisions to check
      */
-    Promise<GetRevisionsResponse> getRevisions(Path path, String revisionRange);
+    Promise<GetRevisionsResponse> getRevisions(Path project, Path path, String revisionRange);
 
     /**
      * Lists directory entries in the repository.
@@ -354,7 +354,7 @@ public interface SubversionClientService {
      * @param target
      *      the target path to browse
      */
-    Promise<CLIOutputResponse> list(String target, @Nullable Credentials credentials);
+    Promise<CLIOutputResponse> list(Path project, String target, @Nullable Credentials credentials);
 
     /**
      * Returns list of the branches of the project.
@@ -362,7 +362,7 @@ public interface SubversionClientService {
      * @param project
      *      the project path
      */
-    Promise<CLIOutputResponse> listBranches(@Nullable Credentials credentials);
+    Promise<CLIOutputResponse> listBranches(Path project, @Nullable Credentials credentials);
 
     /**
      * Returns list of the tags of the project.
@@ -370,5 +370,5 @@ public interface SubversionClientService {
      * @param project
      *      the project path
      */
-    Promise<CLIOutputResponse> listTags(@Nullable Credentials credentials);
+    Promise<CLIOutputResponse> listTags(Path project, @Nullable Credentials credentials);
 }

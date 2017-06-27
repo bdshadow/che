@@ -201,7 +201,7 @@ public class GitVcsService implements VcsService {
      *         callback when the operation is done.
      */
     private void listBranches(final ProjectConfig project, final BranchListMode listMode, final AsyncCallback<List<Branch>> callback) {
-        service.branchList(appContext.getDevMachine(), appContext.getRootProject().getLocation(), listMode)
+        service.branchList(Path.valueOf(project.getPath()), listMode)
                .then(branches -> {
                    final List<Branch> result = branches.stream().map(this::fromGitBranch).collect(Collectors.toList());
                    callback.onSuccess(result);

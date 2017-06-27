@@ -408,7 +408,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     @Override
     public Promise<Void> deleteRepository(Path project) {
         String url = getWsAgentBaseUrl() + REPOSITORY + "?projectPath=" + project;
-        return asyncRequestFactory.createPostRequest(url, null).loader(loader).send();
+        return asyncRequestFactory.createDeleteRequest(url).loader(loader).send();
     }
 
     private String getWsAgentBaseUrl() {

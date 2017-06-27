@@ -92,7 +92,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> add(Path[] path, String depth, boolean addIgnored, boolean addParents,
+    public Promise<CLIOutputResponse> add(Path project, Path[] path, String depth, boolean addIgnored, boolean addParents,
                                           boolean autoProps, boolean noAutoProps) {
         final AddRequest request = dtoFactory.createDto(AddRequest.class)
                                              .withAddIgnored(addIgnored)
@@ -109,7 +109,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> revert(Path[] paths, String depth) {
+    public Promise<CLIOutputResponse> revert(Path project, Path[] paths, String depth) {
         final RevertRequest request = dtoFactory.createDto(RevertRequest.class)
                                                 .withProjectPath(project.toString())
                                                 .withPaths(toList(paths))
@@ -120,7 +120,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> copy(Path source, Path destination, String comment, Credentials credentials) {
+    public Promise<CLIOutputResponse> copy(Path project, Path source, Path destination, String comment, Credentials credentials) {
         final CopyRequest request = dtoFactory.createDto(CopyRequest.class)
                                               .withProjectPath(project.toString())
                                               .withSource(source.toString())
@@ -137,7 +137,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> remove(Path[] paths) {
+    public Promise<CLIOutputResponse> remove(Path project, Path[] paths) {
         final RemoveRequest request =
                 dtoFactory.createDto(RemoveRequest.class)
                           .withPaths(toList(paths))
@@ -149,7 +149,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> merge(Path target, Path sourceUrl) {
+    public Promise<CLIOutputResponse> merge(Path project, Path target, Path sourceUrl) {
         final MergeRequest request = dtoFactory.createDto(MergeRequest.class)
                                                .withProjectPath(project.toString())
                                                .withTarget(target.toString())
@@ -160,12 +160,12 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<InfoResponse> info(String target, String revision, boolean children) {
+    public Promise<InfoResponse> info(Path project, String target, String revision, boolean children) {
         return info(project, target, revision, children, dtoFactory.createDto(Credentials.class));
     }
 
     @Override
-    public Promise<InfoResponse> info(String target, String revision, boolean children, Credentials credentials) {
+    public Promise<InfoResponse> info(Path project, String target, String revision, boolean children, Credentials credentials) {
         final InfoRequest request = dtoFactory.createDto(InfoRequest.class)
                                               .withProjectPath(project.toString())
                                               .withTarget(target)
@@ -182,7 +182,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> status(Path[] paths, String depth, boolean ignoreExternals, boolean showIgnored,
+    public Promise<CLIOutputResponse> status(Path project, Path[] paths, String depth, boolean ignoreExternals, boolean showIgnored,
                                              boolean showUpdates, boolean showUnversioned, boolean verbose, List<String> changeLists) {
         final StatusRequest request = dtoFactory.createDto(StatusRequest.class)
                                                 .withVerbose(verbose)
@@ -261,7 +261,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> showLog(Path[] paths, String revision) {
+    public Promise<CLIOutputResponse> showLog(Path project, Path[] paths, String revision) {
         final String url = getBaseUrl() + "/showlog";
         final ShowLogRequest request = dtoFactory.createDto(ShowLogRequest.class)
                                                  .withProjectPath(project.toString())
@@ -273,7 +273,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> lock(Path[] paths, boolean force, Credentials credentials) {
+    public Promise<CLIOutputResponse> lock(Path project, Path[] paths, boolean force, Credentials credentials) {
         final String url = getBaseUrl() + "/lock";
         final LockRequest request = dtoFactory.createDto(LockRequest.class)
                                               .withProjectPath(project.toString())
@@ -290,7 +290,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> unlock(Path[] paths, boolean force, Credentials credentials) {
+    public Promise<CLIOutputResponse> unlock(Path project, Path[] paths, boolean force, Credentials credentials) {
         final String url = getBaseUrl() + "/unlock";
         final LockRequest request = dtoFactory.createDto(LockRequest.class)
                                               .withProjectPath(project.toString())
@@ -307,7 +307,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> showDiff(Path[] paths, String revision, Credentials credentials) {
+    public Promise<CLIOutputResponse> showDiff(Path project, Path[] paths, String revision, Credentials credentials) {
         final String url = getBaseUrl() + "/showdiff";
         final ShowDiffRequest request = dtoFactory.createDto(ShowDiffRequest.class)
                                                   .withProjectPath(project.toString())
@@ -324,7 +324,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputWithRevisionResponse> commit(Path[] paths, String message, boolean keepChangeLists,
+    public Promise<CLIOutputWithRevisionResponse> commit(Path project, Path[] paths, String message, boolean keepChangeLists,
                                                          boolean keepLocks) {
         final String url = getBaseUrl() + "/commit";
         final CommitRequest request = dtoFactory.createDto(CommitRequest.class)
@@ -339,7 +339,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> cleanup(Path[] paths) {
+    public Promise<CLIOutputResponse> cleanup(Path project, Path[] paths) {
         final String url = getBaseUrl() + "/cleanup";
         final CleanupRequest request = dtoFactory.createDto(CleanupRequest.class)
                                                  .withPaths(toList(paths))
@@ -350,7 +350,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> showConflicts(Path[] paths) {
+    public Promise<CLIOutputResponse> showConflicts(Path project, Path[] paths) {
         final StatusRequest request =
                 dtoFactory.createDto(StatusRequest.class)
                           .withVerbose(false)
@@ -369,7 +369,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponseList> resolve(Map<String, String> resolutions, String depth) {
+    public Promise<CLIOutputResponseList> resolve(Path project, Map<String, String> resolutions, String depth) {
         final String url = getBaseUrl() + "/resolve";
         final ResolveRequest request = dtoFactory.createDto(ResolveRequest.class)
                                                  .withProjectPath(project.toString())
@@ -381,7 +381,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> move(Path source, Path destination, String comment, Credentials credentials) {
+    public Promise<CLIOutputResponse> move(Path project, Path source, Path destination, String comment, Credentials credentials) {
         final MoveRequest request =
                 dtoFactory.createDto(MoveRequest.class)
                           .withProjectPath(project.toString())
@@ -399,7 +399,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> propertySet(String propertyName, String propertyValues, Depth depth, boolean force,
+    public Promise<CLIOutputResponse> propertySet(Path project, String propertyName, String propertyValues, Depth depth, boolean force,
                                                   Path path) {
         final PropertyRequest request =
                 dtoFactory.createDto(PropertySetRequest.class)
@@ -416,7 +416,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> propertyDelete(String propertyName, Depth depth, boolean force, Path path) {
+    public Promise<CLIOutputResponse> propertyDelete(Path project, String propertyName, Depth depth, boolean force, Path path) {
         final PropertyRequest request = dtoFactory.createDto(PropertyDeleteRequest.class)
                                                   .withProjectPath(project.toString())
                                                   .withName(propertyName)
@@ -430,7 +430,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<GetRevisionsResponse> getRevisions(Path path, String revisionRange) {
+    public Promise<GetRevisionsResponse> getRevisions(Path project, Path path, String revisionRange) {
         final GetRevisionsRequest request = dtoFactory.createDto(GetRevisionsRequest.class)
                                                       .withProjectPath(project.toString())
                                                       .withPath(path.toString())
@@ -441,7 +441,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> propertyGet(String propertyName, Path path) {
+    public Promise<CLIOutputResponse> propertyGet(Path project, String propertyName, Path path) {
         final PropertyRequest request = dtoFactory.createDto(PropertyGetRequest.class)
                                                   .withProjectPath(project.toString())
                                                   .withName(propertyName)
@@ -453,7 +453,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> propertyList(Path path) {
+    public Promise<CLIOutputResponse> propertyList(Path project, Path path) {
         final PropertyRequest request = dtoFactory.createDto(PropertyListRequest.class)
                                                   .withProjectPath(project.toString())
                                                   .withPath(path.toString());
@@ -464,7 +464,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> list(String target, @Nullable Credentials credentials) {
+    public Promise<CLIOutputResponse> list(Path project, String target, @Nullable Credentials credentials) {
         ListRequest request = dtoFactory.createDto(ListRequest.class)
                                         .withProjectPath(project.toString())
                                         .withTargetPath(target);
@@ -479,7 +479,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> listBranches(@Nullable Credentials credentials) {
+    public Promise<CLIOutputResponse> listBranches(Path project, @Nullable Credentials credentials) {
         ListRequest request = dtoFactory.createDto(ListRequest.class)
                                         .withProjectPath(project.toString());
         if (credentials != null) {
@@ -493,7 +493,7 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputResponse> listTags(@Nullable Credentials credentials) {
+    public Promise<CLIOutputResponse> listTags(Path project, @Nullable Credentials credentials) {
         ListRequest request = dtoFactory.createDto(ListRequest.class)
                                         .withProjectPath(project.toString());
         if (credentials != null) {
